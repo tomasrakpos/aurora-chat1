@@ -71,7 +71,7 @@ export function AccountHome() {
   const { user, orders, wishlist, recent, notifications } = useStore()
   return (
     <Shell>
-      <h1 className="text-lg font-extrabold md:text-xl">سلام {user.firstName} 👋</h1>
+      <h1 className="text-lg font-extrabold md:text-xl">سلام {user?.firstName} 👋</h1>
       <p className="mt-1 text-sm text-sub">خلاصه‌ی فعالیت شما در آورورا</p>
 
       <div className="mt-5 grid grid-cols-2 gap-3 md:grid-cols-4">
@@ -307,7 +307,7 @@ export function Security() {
         <div><label className="field-label">رمز جدید</label><input dir="ltr" type="password" className="field-input text-left" value={f.next} onChange={(e) => setF({ ...f, next: e.target.value })} /></div>
         <div><label className="field-label">تکرار رمز جدید</label><input dir="ltr" type="password" className="field-input text-left" value={f.confirm} onChange={(e) => setF({ ...f, confirm: e.target.value })} /></div>
         <button className="btn btn-primary h-10 w-full text-sm">تغییر رمز عبور</button>
-        <p className="text-[11px] leading-5 text-mute">عضویت شما: {user.email}. در فروشگاه واقعی، تغییر رمز با تأیید ایمیلی همراه است.</p>
+        <p className="text-[11px] leading-5 text-mute">عضویت شما: {user?.email}. در فروشگاه واقعی، تغییر رمز با تأیید ایمیلی همراه است.</p>
       </form>
     </Shell>
   )

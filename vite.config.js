@@ -2,7 +2,7 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 
-export default defineConfig({
+export default defineConfig(({ isSsrBuild }) => ({
   plugins: [react(), tailwindcss()],
   server: {
     host: true,
@@ -16,7 +16,7 @@ export default defineConfig({
   },
   build: {
     chunkSizeWarningLimit: 1600,
-    rollupOptions: {
+    rollupOptions: isSsrBuild ? {} : {
       output: {
         manualChunks: {
           react: ['react', 'react-dom', 'react-router-dom'],
@@ -25,4 +25,4 @@ export default defineConfig({
       }
     }
   }
-})
+}))
