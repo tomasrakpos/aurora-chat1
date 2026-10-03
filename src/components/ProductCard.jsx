@@ -1,6 +1,6 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
-import { Heart, ShoppingCart, Eye, PhoneCall } from 'lucide-react'
+import { Heart, ShoppingCart, PhoneCall } from 'lucide-react'
 import { useStore } from '../lib/store.jsx'
 import { effective, discountPct, isBuyable } from '../data/index.js'
 import { faNum } from '../lib/format.js'
@@ -64,27 +64,22 @@ export default function ProductCard({ product: p, compact = false }) {
           <div className="mt-1.5"><StockLabel stock={ep.stock} qty={ep.qty} /></div>
         </div>
 
-        <div className="relative z-[2] mt-2.5 flex items-center gap-1.5">
+        <div className="relative z-[2] mt-2.5">
           {buyable ? (
-            <button
-              type="button"
-              onClick={onAdd}
-              className="flex h-9 flex-1 items-center justify-center gap-1.5 rounded-xl border border-line bg-transparent text-xs font-bold text-sub transition-all duration-200 hover:border-cta hover:bg-cta hover:text-white active:scale-[0.98]"
-            >
-              <ShoppingCart size={14} /> افزودن به سبد
-            </button>
+            <div className="md:opacity-0 md:transition-opacity md:duration-200 md:group-hover:opacity-100">
+              <button
+                type="button"
+                onClick={onAdd}
+                className="flex h-9 w-full items-center justify-center gap-1.5 rounded-xl border border-line bg-transparent text-xs font-bold text-sub transition-all duration-200 hover:border-cta hover:bg-cta hover:text-white active:scale-[0.98]"
+              >
+                <ShoppingCart size={14} /> افزودن به سبد
+              </button>
+            </div>
           ) : ep.price?.inquiry ? (
-            <Link to="/support" onClick={(e) => e.stopPropagation()} className="btn btn-soft h-9 flex-1 text-xs">
+            <Link to="/support" onClick={(e) => e.stopPropagation()} className="btn btn-soft h-9 w-full text-xs">
               <PhoneCall size={14} /> استعلام قیمت
             </Link>
-          ) : (
-            <span className="btn btn-soft h-9 flex-1 cursor-not-allowed text-xs opacity-60">
-              {ep.stock === 'soon' ? 'به‌زودی' : ep.stock === 'custom' ? 'سفارشی' : 'ناموجود'}
-            </span>
-          )}
-          <Link to={`/product/${p.id}`} aria-label="مشاهده جزئیات" className="btn btn-ghost h-9 w-9 shrink-0 p-0">
-            <Eye size={15} />
-          </Link>
+          ) : null}
         </div>
       </div>
     </div>

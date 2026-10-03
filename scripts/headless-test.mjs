@@ -4,7 +4,7 @@ import fs from 'fs'
 const html = fs.readFileSync('dist/index.html', 'utf8')
 const scripts = [...html.matchAll(/src="([^"]+\.js)"/g)].map(m => m[1])
 
-const window = new Window({ url: 'http://localhost:5173/' })
+const window = new Window({ url: 'http://localhost:5173' + (process.env.TEST_PATH || '/') })
 window.document.write('<div id="root"></div>')
 for (const k of ['window','document','navigator','history','location','localStorage','sessionStorage','getComputedStyle','requestAnimationFrame','cancelAnimationFrame','CustomEvent','Event','HTMLElement','MutationObserver','IntersectionObserver']) {
   try { globalThis[k] = window[k] } catch {}

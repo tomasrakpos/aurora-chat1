@@ -3,7 +3,8 @@ import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom'
 import {
   Search, ShoppingCart, Heart, User, Home, LayoutGrid, Gamepad2, Cpu, Monitor, Mouse,
   Disc3, Gift, Cable, Mic, Armchair, Puzzle, X, ChevronDown, ChevronLeft, Menu, Headset, LogOut,
-  Package, MapPin, LifeBuoy, Shield, Bell, Download, Settings, Instagram, Send, MessageCircle, Zap, Flame
+  Package, MapPin, LifeBuoy, Shield, ShieldCheck, Bell, Download, Settings, Instagram, Send,
+  MessageCircle, Zap, Flame, Truck, CreditCard
 } from 'lucide-react'
 import { useStore } from '../lib/store.jsx'
 import { CATEGORIES, PRODUCTS, POPULAR_SEARCHES, CATEGORY_TILES, catById, suggestProducts, productById } from '../data/index.js'
@@ -418,6 +419,21 @@ export function MobileNav() {
             {cartCount > 0 && <bdi className="absolute -left-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-cta px-1 text-[9px] font-bold text-white tnum">{faNum(cartCount)}</bdi>}
           </Link>
         </div>
+
+        {/* چیپ‌های دسته‌بندی */}
+        <div className="no-scrollbar container-x flex gap-1.5 overflow-x-auto pb-2.5" aria-label="دسته‌بندی‌ها">
+          <Link to="/products" className={`shrink-0 rounded-full border px-3 py-1.5 text-[11px] font-bold transition ${loc.pathname === '/products' ? 'border-brand/60 bg-brand/10 text-brand-2' : 'border-line bg-elev/50 text-sub active:text-ink'}`}>
+            همه‌ی محصولات
+          </Link>
+          {CATEGORIES.map((c) => (
+            <Link key={c.id} to={`/category/${c.id}`} className={`shrink-0 rounded-full border px-3 py-1.5 text-[11px] font-semibold transition ${loc.pathname === `/category/${c.id}` ? 'border-brand/60 bg-brand/10 text-brand-2' : 'border-line bg-elev/50 text-sub active:text-ink'}`}>
+              {c.name}
+            </Link>
+          ))}
+          <Link to="/support" className={`shrink-0 rounded-full border px-3 py-1.5 text-[11px] font-semibold transition ${loc.pathname === '/support' ? 'border-brand/60 bg-brand/10 text-brand-2' : 'border-line bg-elev/50 text-sub active:text-ink'}`}>
+            پشتیبانی
+          </Link>
+        </div>
       </div>
     </>
   )
@@ -452,7 +468,28 @@ export function Footer() {
   return (
     <footer className="mt-16 border-t border-line bg-deep pb-28 md:pb-10">
       <div className="container-x pt-10">
-        <div className="grid gap-10 md:grid-cols-[1.3fr_1fr_1fr_1fr_1.3fr]">
+        {/* نوار خدمات */}
+        <div className="grid grid-cols-2 gap-6 border-b border-line pb-9 sm:grid-cols-3 md:grid-cols-5">
+          {[
+            { icon: Truck, t: 'ارسال سریع', s: 'تحویل اکسپرس سفارش‌ها' },
+            { icon: ShieldCheck, t: 'ضمانت اصالت کالا', s: 'اورجینال با گارانتی معتبر' },
+            { icon: Zap, t: 'تحویل آنی دیجیتال', s: 'کد بلافاصله پس از پرداخت' },
+            { icon: Headset, t: 'پشتیبانی ۷ روز هفته', s: 'پاسخ‌گویی هر روز' },
+            { icon: CreditCard, t: 'پرداخت امن', s: 'درگاه مطمئن بانکی' }
+          ].map((i) => (
+            <div key={i.t} className="flex items-center gap-3">
+              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-brand/10 text-brand-2">
+                <i.icon size={20} />
+              </span>
+              <div>
+                <p className="text-xs font-bold text-ink">{i.t}</p>
+                <p className="mt-0.5 text-[10px] text-mute">{i.s}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div className="grid gap-10 pt-10 md:grid-cols-[1.3fr_1fr_1fr_1fr_1.3fr]">
           <div>
             <Logo />
             <p className="mt-4 max-w-xs text-[13px] leading-6 text-mute">

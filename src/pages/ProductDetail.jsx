@@ -4,7 +4,7 @@ import {
   ChevronLeft, Heart, ShoppingCart, Zap, ShieldCheck, Truck, KeyRound, Info,
   ThumbsUp, BadgeCheck, ChevronDown, PhoneCall, PackagePlus
 } from 'lucide-react'
-import { productById, relatedProducts, frequentlyBought, SEED_REVIEWS, effective, catById } from '../data/index.js'
+import { productById, relatedProducts, frequentlyBought, SEED_REVIEWS, effective, catById, isBuyable } from '../data/index.js'
 import ProductCard from '../components/ProductCard.jsx'
 import { ProductVisual } from '../components/media.jsx'
 import { Badge, Rating, StockLabel, SectionHeader, EmptyState, PageSkeleton } from '../components/ui.jsx'
@@ -364,6 +364,42 @@ export default function ProductDetail() {
           </div>
         </section>
       )}
+
+      {/* نوار خرید چسبان موبایل (الگوی دیجی‌کالا) */}
+      <div className="fixed inset-x-0 bottom-[calc(84px+env(safe-area-inset-bottom))] z-30 md:hidden">
+        <div className="glass container-x mx-0 flex items-center gap-3 border-y border-line p-3">
+          <div className="min-w-0 flex-1">
+            {p.price?.inquiry ? (
+              <span className="text-xs font-extrabold text-warn">قیمت به‌زودی</span>
+            ) : (
+              <div className="flex items-baseline gap-1.5">
+                <bdi className="text-sm font-extrabold text-ink tnum md:text-base">{faNum(p.price.final)}</bdi>
+                <span className="text-[10px] text-mute">تومان</span>
+                {p.price.old > p.price.final && (
+                  <bdi className="text-[10px] text-mute line-through tnum">{faNum(p.price.old)}</bdi>
+                )}
+              </div>
+            )}
+            <p className="mt-0.5 line-clamp-1 text-[10px] text-mute">{p.name}</p>
+          </div>
+          {isBuyable(p) ? (
+            <button
+              onClick={() => { addToCart(p.id); toast('به سبد خرید اضافه شد') }}
+              className="btn btn-primary h-11 shrink-0 px-6 text-xs"
+            >
+              <ShoppingCart size={15} /> افزودن به سبد
+            </button>
+          ) : p.price?.inquiry ? (
+            <Link to="/support" className="btn btn-soft h-11 shrink-0 px-5 text-xs"><PhoneCall size={15} /> استعلام قیمت</Link>
+          ) : (
+            <span className="btn btn-soft h-11 shrink-0 cursor-not-allowed px-5 text-xs opacity-70">
+              {p.stock === 'soon' ? 'به‌زودی' : p.stock === 'custom' ? 'سفارشی' : 'ناموجود'}
+            </span>
+          )}
+        </div>
+      </div>
+      {/* فاصله برای نوار چسبان در موبایل */}
+      <div className="h-20 md:hidden" />
     </main>
   )
 }
