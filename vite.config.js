@@ -4,6 +4,10 @@ import tailwindcss from '@tailwindcss/vite'
 
 export default defineConfig(({ isSsrBuild }) => ({
   plugins: [react(), tailwindcss()],
+  optimizeDeps: {
+    // فقط صفحه‌ی اصلی اسکن شود؛ فایل قدیمی داخل legacy نادیده گرفته شود
+    entries: ['index.html']
+  },
   server: {
     host: true,
     port: 5173,
