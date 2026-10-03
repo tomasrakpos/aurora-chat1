@@ -194,6 +194,11 @@ export const FILTER_DEFS = {
   ]
 }
 
+/** نقشه‌ی زیردسته‌ها به نام فارسی برای فیلترها */
+export const SUB_LABELS = Object.fromEntries(
+  CATEGORIES.flatMap((c) => c.subs.map((s) => [s.id, s.name]))
+)
+
 export const POPULAR_SEARCHES = [
   'PS5 Pro', 'نینتندو سوییچ 2', 'دسته دوال سنس', 'RTX 5070',
   'EA FC 27', 'GTA VI', 'مانیتور OLED', 'هدست گیمینگ'

@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react'
 import { Link, useParams, useSearchParams } from 'react-router-dom'
 import { ChevronDown, ChevronLeft, Filter, RotateCcw, X } from 'lucide-react'
 import { PRODUCTS, CATEGORIES, catById, FILTER_DEFS } from '../data/index.js'
+import { SUB_LABELS } from '../data/catalog.js'
 import { effective } from '../data/index.js'
 import ProductCard from '../components/ProductCard.jsx'
 import { GridSkeleton, NoResults, Badge } from '../components/ui.jsx'
@@ -88,7 +89,7 @@ export default function Catalog() {
       const v = getVal(p, def.key)
       if (!v) return
       let label = v
-      if (def.type === 'sub' && cat) label = cat.subs.find((s) => s.id === v)?.name || v
+      if (def.type === 'sub') label = (cat && cat.subs.find((s) => s.id === v)?.name) || SUB_LABELS[v] || v
       map.set(v, { value: v, label: String(label), count: (map.get(v)?.count || 0) + 1 })
     })
     return { def, options: [...map.values()].sort((a, b) => b.count - a.count).slice(0, 10) }
