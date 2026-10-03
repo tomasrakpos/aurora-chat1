@@ -1,5 +1,6 @@
-import React from 'react'
-import { Star, StarHalf, PackageSearch, SearchX, HeartOff, ShoppingCart, Inbox, BellOff } from 'lucide-react'
+import React, { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
+import { Star, StarHalf, PackageSearch, SearchX, HeartOff, ShoppingCart, Inbox, BellOff, ArrowLeft } from 'lucide-react'
 import { faNum, compactToman } from '../lib/format.js'
 
 /* ------------------------------ بج‌ها ------------------------------ */
@@ -78,22 +79,46 @@ export function StockLabel({ stock, qty }) {
 }
 
 /* ------------------------------ سرتیتر بخش ------------------------------ */
-export function SectionHeader({ title, sub, link, linkText = 'مشاهده همه', action }) {
+export function SectionHeader({ title, sub, link, linkText = 'مشاهده همه', action, icon: Icon }) {
   return (
     <div className="mb-4 flex items-end justify-between gap-3">
-      <div>
-        <h2 className="text-lg font-extrabold text-ink md:text-xl">{title}</h2>
-        {sub && <p className="mt-0.5 text-xs text-mute md:text-sm">{sub}</p>}
+      <div className="flex items-center gap-2.5">
+        {Icon && (
+          <span className="hidden h-9 w-9 items-center justify-center rounded-xl bg-brand/10 text-brand-2 sm:flex">
+            <Icon size={18} />
+          </span>
+        )}
+        <div>
+          <h2 className="text-base font-extrabold text-ink md:text-xl">{title}</h2>
+          {sub && <p className="mt-0.5 hidden text-xs text-mute md:block md:text-sm">{sub}</p>}
+        </div>
       </div>
       <div className="flex items-center gap-2">
         {action}
         {link && (
-          <a href={link} className="whitespace-nowrap rounded-lg border border-line px-3 py-1.5 text-xs font-semibold text-sub transition hover:border-brand/50 hover:text-ink">
-            {linkText}
-          </a>
+          <Link to={link} className="flex shrink-0 items-center gap-1 whitespace-nowrap text-xs font-bold text-brand-2 transition hover:opacity-75 md:text-[13px]">
+            {linkText} <ArrowLeft size={14} />
+          </Link>
         )}
       </div>
     </div>
+  )
+}
+
+/* ------------------------------ شمارش معکوس ------------------------------ */
+export function Countdown({ target, className = '' }) {
+  const calc = () => Math.max(0, target - Date.now())
+  const [ms, setMs] = useState(calc)
+  useEffect(() => {
+    const t = setInterval(() => setMs(Math.max(0, target - Date.now())), 1000)
+    return () => clearInterval(t)
+  }, [target])
+  const total = Math.floor(ms / 1000)
+  const pad = (n) => faNum(String(n).padStart(2, '0'))
+  return (
+    <bdi dir="ltr" className={`tnum font-extrabold ${className}`}>
+      {pad(Math.floor(total / 3600))}:{pad(Math.floor((total % 3600) / 60))}:{pad(total % 60)}
+    </bdi>
   )
 }
 

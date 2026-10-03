@@ -1,21 +1,48 @@
 import React, { useMemo } from 'react'
 import { Link } from 'react-router-dom'
-import { ArrowLeft, Flame, Sparkles, Gift, Newspaper, Monitor, Mouse, Gamepad2, Zap } from 'lucide-react'
-import { PRODUCTS, HERO_SLIDES, CATEGORIES, CATEGORY_TILES, BRANDS, NEWS } from '../data/index.js'
+import {
+  ArrowLeft, Sparkles, Gamepad2, Zap, Flame, Truck, ShieldCheck, Headset, CreditCard,
+  Mouse, Monitor
+} from 'lucide-react'
+import { PRODUCTS, HERO_SLIDES, CATEGORIES, BRANDS, NEWS } from '../data/index.js'
 import { CAT_ICON } from '../components/layout.jsx'
 import { HeroSlider, ProductCarousel } from '../components/carousels.jsx'
-import ProductCard from '../components/ProductCard.jsx'
-import { ProductVisual, GameCover, GiftArt } from '../components/media.jsx'
-import { SectionHeader, Badge } from '../components/ui.jsx'
+import { GiftArt } from '../components/media.jsx'
+import { SectionHeader, Badge, Countdown } from '../components/ui.jsx'
 import { useStore } from '../lib/store.jsx'
 import { faDate } from '../lib/format.js'
+
+/* ---------------- نوار خدمات (الگوی سرویس‌های دیجی‌کالا) ---------------- */
+const USP = [
+  { icon: Truck, title: 'ارسال سریع', sub: 'تحویل اکسپرس سفارش‌ها' },
+  { icon: ShieldCheck, title: 'ضمانت اصالت کالا', sub: 'اورجینال با گارانتی معتبر' },
+  { icon: Zap, title: 'تحویل آنی دیجیتال', sub: 'کد بلافاصله پس از پرداخت' },
+  { icon: Headset, title: 'پشتیبانی ۷ روز هفته', sub: 'پاسخ‌گویی هر روز' },
+  { icon: CreditCard, title: 'پرداخت امن', sub: 'درگاه مطمئن بانکی' }
+]
 
 export default function Home() {
   const { recent } = useStore()
 
+  const endOfDay = useMemo(() => {
+    const d = new Date()
+    d.setHours(23, 59, 59, 999)
+    return d.getTime()
+  }, [])
+
   const d = useMemo(() => {
     const priced = PRODUCTS.filter((p) => p.price && !p.price.inquiry)
+    const score = (p) => {
+      let s = p.sold || 0
+      if ((p.badges || []).some((b) => ['hot', 'best', 'limited'].includes(b))) s += 5000
+      if (p.stock === 'in' || p.stock === 'low' || p.stock === undefined) s += 800
+      return s
+    }
     return {
+      deals: priced
+        .filter((p) => p.stock !== 'out' && p.stock !== 'soon')
+        .sort((a, b) => score(b) - score(a))
+        .slice(0, 10),
       newArrivals: [...PRODUCTS].sort((a, b) => (b.addedAt || '').localeCompare(a.addedAt || '')).slice(0, 12),
       bestSellers: [...priced].sort((a, b) => b.sold - a.sold).slice(0, 12),
       trendingGames: PRODUCTS.filter((p) => p.cat === 'games').sort((a, b) => b.sold - a.sold).slice(0, 10),
@@ -29,92 +56,128 @@ export default function Home() {
   }, [recent])
 
   return (
-    <main className="container-x space-y-14 py-5 md:space-y-20 md:py-7">
+    <main className="container-x space-y-10 py-4 md:space-y-16 md:py-6">
       {/* اسلایدر اصلی */}
       <HeroSlider slides={HERO_SLIDES} />
 
-      {/* دسته‌بندی‌ها */}
+      {/* دایره‌های دسته‌بندی */}
       <section aria-label="دسته‌بندی‌ها">
-        <SectionHeader title="دسته‌بندی‌ها" sub="آنچه برای یک ستاپ کامل نیاز دارید" />
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-5 md:gap-4">
-          {CATEGORIES.map((c, i) => {
-            const tile = CATEGORY_TILES.find((t) => t.id === c.id)
+        <div className="no-scrollbar flex gap-3 overflow-x-auto pb-1 md:grid md:grid-cols-11 md:gap-2">
+          {CATEGORIES.map((c) => {
             const Icon = CAT_ICON[c.icon] || Gamepad2
             return (
-              <Link key={c.id} to={`/category/${c.id}`}
-                className="group relative overflow-hidden rounded-2xl border border-line-soft bg-card transition-all duration-300 hover:-translate-y-1 hover:border-brand/40 hover:shadow-pop"
-                style={{ animationDelay: `${i * 40}ms` }}>
-                <div className="relative h-28 overflow-hidden md:h-32">
-                  {tile?.img ? (
-                    <img src={tile.img} alt={c.name} loading="lazy" className="h-full w-full object-cover transition duration-500 group-hover:scale-105" />
-                  ) : c.id === 'games' ? (
-                    <GameCover cover={{ bg: 'vice', title: 'GAMES', sub: 'بازی' }} />
-                  ) : (
-                    <GiftArt gift={{ brand: 'Gift Cards', value: 'DIGITAL', colors: ['#8b5cf6', '#22d3ee'] }} />
-                  )}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent" />
-                  <div className="absolute bottom-2 right-3 left-3 flex items-center justify-between">
-                    <span className="text-[13px] font-extrabold text-white">{c.name}</span>
-                    <Icon size={15} className="text-white/80" />
-                  </div>
-                </div>
+              <Link key={c.id} to={`/category/${c.id}`} className="group flex min-w-[76px] flex-col items-center gap-2 md:min-w-0">
+                <span className="flex h-14 w-14 items-center justify-center rounded-full border border-line-soft bg-card text-brand-2 transition-all duration-300 group-hover:-translate-y-0.5 group-hover:border-brand/50 group-hover:bg-elev md:h-16 md:w-16">
+                  <Icon size={22} />
+                </span>
+                <span className="text-center text-[10px] font-semibold leading-4 text-sub transition group-hover:text-ink md:text-[11px]">{c.name}</span>
               </Link>
             )
           })}
         </div>
       </section>
 
+      {/* نوار خدمات */}
+      <section aria-label="خدمات فروشگاه" className="rounded-2xl border border-line-soft bg-panel/60 px-4 py-4 md:px-6">
+        <div className="no-scrollbar flex gap-6 overflow-x-auto md:grid md:grid-cols-5 md:gap-0">
+          {USP.map((u, i) => (
+            <div key={u.title} className="flex min-w-[170px] items-center gap-3 md:justify-center">
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand/10 text-brand-2">
+                <u.icon size={19} />
+              </span>
+              <div className={i > 0 ? 'md:border-r md:border-line-soft md:pr-6' : ''}>
+                <p className="text-xs font-bold text-ink">{u.title}</p>
+                <p className="mt-0.5 text-[10px] text-mute">{u.sub}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* پیشنهاد امروز */}
+      <section id="deals" aria-label="پیشنهاد امروز" className="scroll-mt-36 overflow-hidden rounded-3xl border border-brand/25 bg-gradient-to-l from-brand/20 via-panel to-panel">
+        <div className="flex flex-col gap-4 p-4 md:flex-row md:gap-0 md:p-5">
+          <div className="flex shrink-0 flex-row items-center gap-3 border-b border-line-soft pb-4 md:w-52 md:flex-col md:justify-center md:gap-2.5 md:border-b-0 md:border-l md:pb-0 md:pl-5">
+            <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-warn/15 text-warn md:h-14 md:w-14">
+              <Zap size={26} />
+            </span>
+            <div className="flex-1 md:flex-none md:text-center">
+              <h2 className="text-base font-extrabold text-ink md:text-lg">پیشنهاد امروز</h2>
+              <p className="mt-0.5 hidden text-[11px] leading-5 text-sub md:block">هر روز چند انتخاب ویژه از انبار آورورا</p>
+            </div>
+            <div className="hidden flex-col items-center gap-1 md:flex">
+              <Countdown target={endOfDay} className="rounded-lg bg-deep/70 px-3 py-1.5 text-sm tracking-widest text-warn" />
+              <span className="text-[10px] text-mute">تا پایان امروز</span>
+            </div>
+            <Link to="/products?sort=popular" className="hidden items-center gap-1 text-xs font-bold text-brand-2 transition hover:opacity-75 md:flex">
+              مشاهده همه <ArrowLeft size={13} />
+            </Link>
+          </div>
+          <div className="min-w-0 flex-1 md:pr-5">
+            <ProductCarousel products={d.deals} id="daily-deals" />
+          </div>
+        </div>
+      </section>
+
+      {/* بنرهای دوقلو */}
+      <section className="grid gap-3 md:grid-cols-2 md:gap-4" aria-label="بنرهای ویژه">
+        <Link to="/category/games?sub=preorder" className="group relative block h-44 overflow-hidden rounded-2xl border border-line md:h-56">
+          <img src="/img/hero/hero-gta6.jpg" alt="پیش‌خرید بازی‌های بزرگ" loading="lazy" className="h-full w-full object-cover opacity-80 transition duration-500 group-hover:scale-105 group-hover:opacity-100" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent" />
+          <div className="absolute inset-x-4 bottom-4 flex items-end justify-between">
+            <div>
+              <Badge type="preorder" />
+              <h3 className="mt-2 text-lg font-extrabold text-white md:text-xl">پیش‌خرید بازی‌های بزرگ</h3>
+              <p className="mt-1 text-xs text-white/75">GTA VI و عنوان‌های در راه را زودتر رزرو کنید</p>
+            </div>
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/15 text-white backdrop-blur-sm transition group-hover:bg-brand">
+              <ArrowLeft size={16} />
+            </span>
+          </div>
+        </Link>
+        <Link to="/category/digital" className="group relative block h-44 overflow-hidden rounded-2xl border border-line md:h-56">
+          <img src="/img/hero/hero-fc27.jpg" alt="استور دیجیتال" loading="lazy" className="h-full w-full object-cover opacity-80 transition duration-500 group-hover:scale-105 group-hover:opacity-100" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent" />
+          <div className="absolute inset-x-4 bottom-4 flex items-end justify-between">
+            <div>
+              <Badge type="digital" />
+              <h3 className="mt-2 text-lg font-extrabold text-white md:text-xl">استور دیجیتال</h3>
+              <p className="mt-1 text-xs text-white/75">گیفت‌کارت و اشتراک قانونی با تحویل آنی</p>
+            </div>
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/15 text-white backdrop-blur-sm transition group-hover:bg-brand">
+              <ArrowLeft size={16} />
+            </span>
+          </div>
+        </Link>
+      </section>
+
       {/* جدیدترین‌ها */}
       <section>
-        <SectionHeader title="جدیدترین کالاها" sub="تازه‌های انبار آورورا" link="/products?sort=new" />
+        <SectionHeader title="جدیدترین کالاها" sub="تازه‌های انبار آورورا" link="/products?sort=new" icon={Sparkles} />
         <ProductCarousel products={d.newArrivals} id="new-arrivals" />
       </section>
 
       {/* پرفروش‌ها */}
       <section>
-        <SectionHeader title="پرفروش‌ترین‌ها" sub="انتخاب خود گیمرها" link="/products?sort=popular" />
+        <SectionHeader title="پرفروش‌ترین‌ها" sub="انتخاب خود گیمرها" link="/products?sort=popular" icon={Flame} />
         <ProductCarousel products={d.bestSellers} id="best-sellers" />
       </section>
 
       {/* بازی‌های داغ */}
       <section>
-        <SectionHeader title="بازی‌های داغ" sub="از پیش‌خریدهای بزرگ تا عنوان‌های عرضه‌شده" link="/category/games" />
+        <SectionHeader title="بازی‌های داغ" sub="از پیش‌خریدهای بزرگ تا عنوان‌های عرضه‌شده" link="/category/games" icon={Gamepad2} />
         <ProductCarousel products={d.trendingGames} id="trending-games" />
       </section>
 
-      {/* بنر پیش‌خرید */}
-      {d.preorders.length > 0 && (
-        <section className="overflow-hidden rounded-3xl border border-line bg-panel">
-          <div className="relative">
-            <img src="/img/hero/hero-gta6.jpg" alt="" className="h-56 w-full object-cover opacity-60 md:h-72" loading="lazy" />
-            <div className="absolute inset-0 bg-gradient-to-l from-panel via-panel/60 to-transparent" />
-            <div className="absolute inset-0 flex items-center">
-              <div className="container-x w-full">
-                <div className="max-w-lg">
-                  <Badge type="preorder" />
-                  <h2 className="mt-3 text-2xl font-extrabold md:text-3xl">پیش‌خریدهای فعال</h2>
-                  <p className="mt-2 text-sm leading-6 text-sub">GTA VI و عنوان‌های در راه را زودتر از همه رزرو کنید؛ مبلغ هنگام ثبت سفارش دریافت و کالا در تاریخ عرضه ارسال می‌شود.</p>
-                  <div className="mt-4 flex flex-wrap gap-2">
-                    {d.preorders.slice(0, 3).map((p) => (
-                      <Link key={p.id} to={`/product/${p.id}`} className="btn btn-soft h-9 px-4 text-xs">{p.name.split('—')[0]}</Link>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-      )}
-
       {/* کنسول‌ها */}
       <section>
-        <SectionHeader title="کنسول‌ها" sub="پلی‌استیشن، ایکس‌باکس، نینتندو و دستی‌ها" link="/category/consoles" />
+        <SectionHeader title="کنسول‌ها" sub="پلی‌استیشن، ایکس‌باکس، نینتندو و دستی‌ها" link="/category/consoles" icon={Gamepad2} />
         <ProductCarousel products={d.consoles} id="consoles" />
       </section>
 
       {/* استور دیجیتال */}
       <section>
-        <SectionHeader title="استور دیجیتال" sub="گیفت‌کارت و اشتراک قانونی — تحویل آنی" link="/category/digital" />
+        <SectionHeader title="گیفت‌کارت و اشتراک" sub="تحویل آنی پس از پرداخت" link="/category/digital" icon={Zap} />
         <div className="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4">
           {d.digital.slice(0, 4).map((p) => (
             <Link key={p.id} to={`/product/${p.id}`} className="group relative overflow-hidden rounded-2xl border border-line-soft bg-card transition-all duration-300 hover:-translate-y-1 hover:border-brand/40">
@@ -128,15 +191,15 @@ export default function Home() {
         </div>
       </section>
 
-      {/* مانیتور و قطعات */}
+      {/* مانیتور و سخت‌افزار */}
       <section>
-        <SectionHeader title="مانیتور و سخت‌افزار" sub="از پنل‌های اولد تا کارت‌های گرافیک" link="/category/monitors" />
+        <SectionHeader title="مانیتور و سخت‌افزار" sub="از پنل‌های اولد تا کارت‌های گرافیک" link="/category/monitors" icon={Monitor} />
         <ProductCarousel products={d.monitorsPc} id="monitors-pc" />
       </section>
 
       {/* تجهیزات جانبی */}
       <section>
-        <SectionHeader title="تجهیزات جانبی" sub="دسته، هدست، کیبورد و ماوس" link="/category/peripherals" />
+        <SectionHeader title="تجهیزات جانبی" sub="دسته، هدست، کیبورد و ماوس" link="/category/peripherals" icon={Mouse} />
         <ProductCarousel products={d.peripherals} id="peripherals" />
       </section>
 
@@ -150,10 +213,10 @@ export default function Home() {
 
       {/* برندها */}
       <section>
-        <SectionHeader title="برندها" sub="نمایندگان محبوب دنیای گیمینگ" />
+        <SectionHeader title="خرید بر اساس برند" sub="برندهای محبوب دنیای گیمینگ" />
         <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-7">
           {BRANDS.slice(0, 21).map((b) => (
-            <Link key={b} to={`/search?q=${encodeURIComponent(b)}`} className="flex h-14 items-center justify-center rounded-xl border border-line-soft bg-card px-2 text-center transition hover:border-brand/40">
+            <Link key={b} to={`/search?q=${encodeURIComponent(b)}`} className="flex h-14 items-center justify-center rounded-xl border border-line-soft bg-card px-2 text-center transition hover:border-brand/40 hover:bg-elev">
               <span dir="ltr" className="text-xs font-bold tracking-wide text-sub">{b}</span>
             </Link>
           ))}

@@ -168,23 +168,32 @@ export default function Catalog() {
       </nav>
 
       {/* سربرگ دسته */}
-      <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
+      <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
         <div>
           <h1 className="text-xl font-extrabold md:text-2xl">{cat ? cat.name : 'همه‌ی محصولات'}</h1>
           <p className="mt-1 text-xs text-mute md:text-sm">{cat ? cat.desc : 'مرور کامل فروشگاه؛ با فیلتر و مرتب‌سازی'} — <bdi className="tnum">{faNum(filtered.length)}</bdi> کالا</p>
         </div>
-        <div className="flex items-center gap-2">
-          <button onClick={() => setSheetOpen(true)} className="btn btn-ghost h-10 px-3 text-xs lg:hidden">
-            <Filter size={15} /> فیلتر {activeCount > 0 && <bdi className="rounded-full bg-cta px-1.5 text-[10px] text-white tnum">{faNum(activeCount)}</bdi>}
-          </button>
-          <label className="flex items-center gap-2 text-xs text-sub">
-            <span className="hidden sm:inline">مرتب‌سازی:</span>
-            <select value={sort} onChange={(e) => { const n = new URLSearchParams(sp); n.set('sort', e.target.value); setSp(n) }}
-              className="field-input h-10 w-36 cursor-pointer text-xs">
-              {SORTS.map((s) => <option key={s.id} value={s.id}>{s.label}</option>)}
-            </select>
-          </label>
-        </div>
+        <button onClick={() => setSheetOpen(true)} className="btn btn-ghost h-10 px-3 text-xs lg:hidden">
+          <Filter size={15} /> فیلترها {activeCount > 0 && <bdi className="rounded-full bg-cta px-1.5 text-[10px] text-white tnum">{faNum(activeCount)}</bdi>}
+        </button>
+      </div>
+
+      {/* نوار مرتب‌سازی */}
+      <div className="no-scrollbar mb-6 flex items-center gap-1.5 overflow-x-auto rounded-2xl border border-line-soft bg-panel/60 px-3 py-2">
+        <span className="shrink-0 pl-1 text-[11px] font-bold text-mute">مرتب‌سازی:</span>
+        {SORTS.map((s) => {
+          const on = sort === s.id
+          return (
+            <button
+              key={s.id}
+              onClick={() => { const n = new URLSearchParams(sp); n.set('sort', s.id); setSp(n) }}
+              aria-pressed={on}
+              className={`shrink-0 rounded-lg px-3 py-1.5 text-xs font-semibold transition ${on ? 'bg-elev text-ink shadow-soft' : 'text-sub hover:text-ink'}`}
+            >
+              {s.label}
+            </button>
+          )
+        })}
       </div>
 
       <div className="grid gap-6 lg:grid-cols-[260px_1fr]">

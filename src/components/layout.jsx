@@ -2,11 +2,11 @@ import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom'
 import {
   Search, ShoppingCart, Heart, User, Home, LayoutGrid, Gamepad2, Cpu, Monitor, Mouse,
-  Disc3, Gift, Cable, Mic, Armchair, Puzzle, X, ChevronDown, Menu, Headset, LogOut,
-  Package, MapPin, LifeBuoy, Shield, Bell, Download, Settings, Instagram, Send, MessageCircle
+  Disc3, Gift, Cable, Mic, Armchair, Puzzle, X, ChevronDown, ChevronLeft, Menu, Headset, LogOut,
+  Package, MapPin, LifeBuoy, Shield, Bell, Download, Settings, Instagram, Send, MessageCircle, Zap, Flame
 } from 'lucide-react'
 import { useStore } from '../lib/store.jsx'
-import { CATEGORIES, PRODUCTS, POPULAR_SEARCHES, CATEGORY_TILES, suggestProducts, productById } from '../data/index.js'
+import { CATEGORIES, PRODUCTS, POPULAR_SEARCHES, CATEGORY_TILES, catById, suggestProducts, productById } from '../data/index.js'
 import { faNum, normalize } from '../lib/format.js'
 import { ProductVisual } from './media.jsx'
 import { PriceBlock } from './ui.jsx'
@@ -163,7 +163,8 @@ export function SearchBox({ autoFocus = false, onNavigate, mobile = false }) {
 /* ------------------------------ مگامنو + هدر دسکتاپ ------------------------------ */
 export function Header() {
   const { cart, wishlist, user } = useStore()
-  const [mega, setMega] = useState(null)
+  const [mega, setMega] = useState(false)
+  const [megaCat, setMegaCat] = useState(CATEGORIES[0]?.id)
   const [userMenu, setUserMenu] = useState(false)
   const megaTimer = useRef(null)
   const nav = useNavigate()
@@ -171,35 +172,39 @@ export function Header() {
   const cartCount = cart.reduce((s, i) => s + i.qty, 0)
   const userMenuRef = useRef(null)
 
-  useEffect(() => { setMega(null); setUserMenu(false) }, [loc.pathname])
+  useEffect(() => { setMega(false); setUserMenu(false) }, [loc.pathname])
   useEffect(() => {
     const onClick = (e) => { if (userMenuRef.current && !userMenuRef.current.contains(e.target)) setUserMenu(false) }
     document.addEventListener('mousedown', onClick)
     return () => document.removeEventListener('mousedown', onClick)
   }, [])
 
-  const enter = (id) => { clearTimeout(megaTimer.current); setMega(id) }
-  const leave = () => { megaTimer.current = setTimeout(() => setMega(null), 120) }
+  const enter = () => { clearTimeout(megaTimer.current); setMega(true) }
+  const leave = () => { megaTimer.current = setTimeout(() => setMega(false), 140) }
+
+  const active = catById(megaCat) || CATEGORIES[0]
+  const activeTile = CATEGORY_TILES.find((t) => t.id === active?.id)
 
   return (
-    <header className="sticky top-0 z-40 border-b border-line bg-base/90 backdrop-blur-md">
-      <div className="container-x flex h-16 items-center gap-4 md:h-[72px]">
-        <div className="hidden md:block"><Logo /></div>
-        <div className="flex-1 md:max-w-2xl"><SearchBox /></div>
+    <header className="sticky top-0 z-40 border-b border-line bg-base/92 backdrop-blur-md">
+      {/* ردیف اول: لوگو، جستجو، اکشن‌ها */}
+      <div className="container-x flex h-16 items-center gap-3 md:h-[76px] md:gap-5">
+        <div className="hidden shrink-0 md:block"><Logo /></div>
+        <div className="min-w-0 flex-1 md:max-w-2xl"><SearchBox /></div>
 
-        <div className="mr-auto flex items-center gap-1.5 md:gap-2">
-          {/* حساب کاربری */}
-          <div ref={userMenuRef} className="relative">
+        <div className="mr-auto flex items-center md:gap-1">
+          {/* ورود | ثبت‌نام */}
+          <div ref={userMenuRef} className="relative hidden md:block">
             <button
               onClick={() => (user ? setUserMenu((v) => !v) : nav('/login'))}
-              className="btn btn-ghost h-10 gap-2 px-3 text-xs"
-              aria-label="حساب کاربری"
+              className={`flex h-10 items-center gap-2 rounded-xl border px-4 text-xs font-bold transition ${user ? 'border-line text-ink hover:border-brand/50' : 'border-line text-sub hover:border-brand/50 hover:text-ink'}`}
+              aria-haspopup="menu"
             >
-              <User size={17} />
-              <span className="hidden lg:inline">{user ? user.firstName : 'ورود | ثبت‌نام'}</span>
+              <User size={16} />
+              {user ? user.firstName : 'ورود | ثبت‌نام'}
             </button>
             {userMenu && user && (
-              <div className="glass pop-in absolute left-0 top-[calc(100%+8px)] w-56 rounded-2xl p-2">
+              <div className="glass pop-in absolute left-0 top-[calc(100%+8px)] z-50 w-60 rounded-2xl p-2" role="menu">
                 <p className="border-b border-line px-3 py-2 text-xs text-mute">{user.email}</p>
                 {[
                   { to: '/account', icon: User, label: 'حساب کاربری' },
@@ -216,75 +221,95 @@ export function Header() {
             )}
           </div>
 
-          <Link to="/wishlist" aria-label="علاقه‌مندی‌ها" className="btn btn-ghost relative h-10 w-10 p-0">
-            <Heart size={18} />
+          <span className="mx-1 hidden h-6 w-px bg-line md:block" />
+
+          <Link to="/wishlist" aria-label="علاقه‌مندی‌ها" className="btn btn-ghost relative hidden h-10 w-10 p-0 md:flex">
+            <Heart size={19} />
             {wishlist.length > 0 && <bdi className="absolute -left-1.5 -top-1.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-hot px-1 text-[10px] font-bold text-white tnum">{faNum(wishlist.length)}</bdi>}
           </Link>
 
           <Link to="/cart" aria-label="سبد خرید" className="btn btn-ghost relative h-10 w-10 p-0">
-            <ShoppingCart size={18} />
+            <ShoppingCart size={19} />
             {cartCount > 0 && <bdi className="absolute -left-1.5 -top-1.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-cta px-1 text-[10px] font-bold text-white tnum">{faNum(cartCount)}</bdi>}
           </Link>
         </div>
       </div>
 
-      {/* ناوبری دسته‌ها */}
-      <nav className="hidden border-t border-line-soft md:block" onMouseLeave={leave} aria-label="دسته‌بندی‌ها">
-        <div className="container-x flex items-center gap-1">
-          <NavLink to="/products" className={({ isActive }) => `flex items-center gap-1.5 rounded-lg px-3 py-2.5 text-[13px] font-semibold transition ${isActive ? 'text-brand-2' : 'text-sub hover:text-ink'}`}>
-            <LayoutGrid size={15} /> همه‌ی محصولات
-          </NavLink>
-          {CATEGORIES.map((c) => (
-            <button
-              key={c.id}
-              onMouseEnter={() => enter(c.id)}
-              onFocus={() => enter(c.id)}
-              onClick={() => nav(`/category/${c.id}`)}
-              className={`flex items-center gap-1.5 rounded-lg px-3 py-2.5 text-[13px] font-semibold transition ${mega === c.id ? 'text-ink' : 'text-sub hover:text-ink'}`}
-            >
-              {React.createElement(CAT_ICON[c.icon] || Gamepad2, { size: 15 })}
-              {c.name}
-              <ChevronDown size={12} className={`transition-transform ${mega === c.id ? 'rotate-180' : ''}`} />
-            </button>
-          ))}
+      {/* ردیف دوم: دسته‌بندی کالاها + لینک‌های سریع */}
+      <nav className="hidden border-t border-line-soft md:block" aria-label="دسته‌بندی‌ها">
+        <div className="container-x flex items-center gap-0.5" onMouseLeave={leave}>
+          <button
+            onMouseEnter={enter}
+            onFocus={enter}
+            onClick={() => nav('/products')}
+            className={`flex items-center gap-1.5 rounded-lg px-3 py-2.5 text-[13px] font-bold transition ${mega ? 'text-ink' : 'text-sub hover:text-ink'}`}
+            aria-expanded={mega}
+          >
+            <Menu size={16} />
+            دسته‌بندی کالاها
+            <ChevronDown size={13} className={`transition-transform ${mega ? 'rotate-180' : ''}`} />
+          </button>
+          <span className="mx-2 h-4 w-px bg-line" />
+          <Link to="/#deals" className="flex items-center gap-1.5 rounded-lg px-3 py-2.5 text-[13px] font-semibold text-sub transition hover:text-ink">
+            <Zap size={15} className="text-warn" /> پیشنهاد امروز
+          </Link>
+          <Link to="/category/games?sub=preorder" className="flex items-center gap-1.5 rounded-lg px-3 py-2.5 text-[13px] font-semibold text-sub transition hover:text-ink">
+            <Flame size={15} className="text-hot" /> پیش‌خریدها
+          </Link>
+          <Link to="/category/digital" className="flex items-center gap-1.5 rounded-lg px-3 py-2.5 text-[13px] font-semibold text-sub transition hover:text-ink">
+            استور دیجیتال
+          </Link>
+          <Link to="/category/systems" className="flex items-center gap-1.5 rounded-lg px-3 py-2.5 text-[13px] font-semibold text-sub transition hover:text-ink">
+            سیستم‌های گیمینگ
+          </Link>
           <Link to="/support" className="mr-auto flex items-center gap-1.5 rounded-lg px-3 py-2.5 text-[13px] font-semibold text-sub transition hover:text-ink">
             <Headset size={15} /> پشتیبانی
           </Link>
         </div>
 
-        {/* مگامنو */}
-        {mega && (() => {
-          const c = CATEGORIES.find((x) => x.id === mega)
-          const tile = CATEGORY_TILES.find((t) => t.id === mega)
-          if (!c) return null
-          return (
-            <div className="absolute inset-x-0 border-b border-line bg-panel/95 shadow-pop backdrop-blur-xl fade-in" onMouseEnter={() => enter(c.id)}>
-              <div className="container-x grid grid-cols-[1fr_300px] gap-8 py-6">
-                <div>
-                  <p className="mb-3 text-sm font-extrabold text-ink">{c.name} <span className="mr-2 text-xs font-medium text-mute">{c.en}</span></p>
-                  <div className="grid grid-cols-3 gap-x-6 gap-y-1 xl:grid-cols-4">
-                    <Link to={`/category/${c.id}`} className="rounded-lg px-2 py-2 text-[13px] font-bold text-brand-2 transition hover:bg-white/5">همه‌ی {c.name}</Link>
-                    {c.subs.map((s) => (
-                      <Link key={s.id} to={`/category/${c.id}?sub=${s.id}`} className="rounded-lg px-2 py-2 text-[13px] text-sub transition hover:bg-white/5 hover:text-ink">{s.name}</Link>
-                    ))}
-                  </div>
+        {/* مگامنو: ستون دسته‌ها + زیردسته‌ها */}
+        {mega && active && (
+          <div className="absolute inset-x-0 border-b border-line bg-panel/97 shadow-pop backdrop-blur-xl fade-in" onMouseEnter={enter}>
+            <div className="container-x flex">
+              <div className="w-60 shrink-0 border-l border-line-soft py-3">
+                {CATEGORIES.map((c) => {
+                  const Icon = CAT_ICON[c.icon] || Gamepad2
+                  const on = megaCat === c.id
+                  return (
+                    <button
+                      key={c.id}
+                      onMouseEnter={() => setMegaCat(c.id)}
+                      onFocus={() => setMegaCat(c.id)}
+                      onClick={() => nav(`/category/${c.id}`)}
+                      className={`flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-right text-[13px] font-semibold transition ${on ? 'bg-elev text-ink' : 'text-sub hover:bg-white/5 hover:text-ink'}`}
+                    >
+                      <Icon size={16} className={on ? 'text-brand-2' : ''} />
+                      {c.name}
+                      <ChevronLeft size={13} className={`mr-auto transition ${on ? 'text-brand-2' : 'text-faint'}`} />
+                    </button>
+                  )
+                })}
+              </div>
+              <div className="flex-1 py-4 pr-8">
+                <p className="mb-3 text-sm font-extrabold text-ink">{active.name} <span className="mr-2 text-xs font-medium text-mute">{active.en}</span></p>
+                <div className="grid grid-cols-3 gap-x-8 gap-y-1">
+                  <Link to={`/category/${active.id}`} className="rounded-lg px-2 py-2 text-[13px] font-bold text-brand-2 transition hover:bg-white/5">همه‌ی {active.name}</Link>
+                  {active.subs.map((s) => (
+                    <Link key={s.id} to={`/category/${active.id}?sub=${s.id}`} className="rounded-lg px-2 py-2 text-[13px] text-sub transition hover:bg-white/5 hover:text-ink">{s.name}</Link>
+                  ))}
                 </div>
-                <Link to={`/category/${c.id}`} className="group relative block overflow-hidden rounded-2xl border border-line bg-[#eef1f6]">
-                  {tile?.img ? (
-                    <img src={tile.img} alt={c.name} className="h-40 w-full object-cover transition duration-500 group-hover:scale-105" loading="lazy" />
-                  ) : (
-                    <div className="dotgrid flex h-40 w-full items-center justify-center bg-elev">
-                      {React.createElement(CAT_ICON[c.icon] || Gamepad2, { size: 44, className: 'text-brand' })}
+                {activeTile?.img && (
+                  <Link to={`/category/${active.id}`} className="group mt-4 relative block h-32 overflow-hidden rounded-xl border border-line">
+                    <img src={activeTile.img} alt={active.name} className="h-full w-full object-cover transition duration-500 group-hover:scale-105" loading="lazy" />
+                    <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent p-3">
+                      <p className="text-xs font-bold text-white">{active.desc}</p>
                     </div>
-                  )}
-                  <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent p-3">
-                    <p className="text-sm font-bold text-white">{c.desc}</p>
-                  </div>
-                </Link>
+                  </Link>
+                )}
               </div>
             </div>
-          )
-        })()}
+          </div>
+        )}
       </nav>
     </header>
   )
@@ -376,17 +401,22 @@ export function MobileNav() {
 
       <MobileSearch open={search} onClose={() => setSearch(false)} />
 
-      {/* هدر کوچک موبایل */}
-      <div className="sticky top-0 z-40 border-b border-line bg-base/90 backdrop-blur-md md:hidden">
-        <div className="container-x flex h-14 items-center justify-between">
+      {/* هدر موبایل: لوگو + پیل جستجو + سبد */}
+      <div className="sticky top-0 z-40 border-b border-line bg-base/92 backdrop-blur-md md:hidden">
+        <div className="container-x flex h-14 items-center gap-2.5">
           <Logo small />
-          <div className="flex items-center gap-1.5">
-            <button onClick={() => setSearch(true)} aria-label="جستجو" className="btn btn-ghost h-10 w-10 p-0"><Search size={18} /></button>
-            <Link to="/cart" aria-label="سبد خرید" className="btn btn-ghost relative h-10 w-10 p-0">
-              <ShoppingCart size={18} />
-              {cartCount > 0 && <bdi className="absolute -left-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-cta px-1 text-[9px] font-bold text-white tnum">{faNum(cartCount)}</bdi>}
-            </Link>
-          </div>
+          <button
+            onClick={() => setSearch(true)}
+            className="flex h-9 flex-1 items-center gap-2 rounded-xl border border-line-soft bg-elev/60 px-3 text-xs text-mute transition active:bg-elev"
+            aria-label="جستجو در محصولات"
+          >
+            <Search size={15} />
+            <span className="truncate">جستجو در آورورا…</span>
+          </button>
+          <Link to="/cart" aria-label="سبد خرید" className="btn btn-ghost relative h-9 w-9 shrink-0 p-0">
+            <ShoppingCart size={18} />
+            {cartCount > 0 && <bdi className="absolute -left-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-cta px-1 text-[9px] font-bold text-white tnum">{faNum(cartCount)}</bdi>}
+          </Link>
         </div>
       </div>
     </>

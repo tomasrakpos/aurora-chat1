@@ -18,8 +18,14 @@ for (const s of scripts) {
   try { await import('../dist' + s) ; console.log('LOADED', s) }
   catch (e) { console.log('CRASH in', s, '\n', e.message.split('\n').slice(0,4).join('\n')) }
 }
-await new Promise(r => setTimeout(r, 800))
+await new Promise(r => setTimeout(r, 1200))
 const root = window.document.getElementById('root')
+const text = (root?.textContent || '').replace(/\s+/g, ' ')
 console.log('ROOT CHILDREN:', root ? root.children.length : 'no root')
-console.log('BODY TEXT:', (root?.textContent || '').slice(0, 200).replace(/\s+/g, ' '))
+console.log('TEXT LENGTH:', text.length)
+console.log('BODY TEXT:', text.slice(0, 220))
+const markers = process.argv.slice(2)
+if (markers.length) {
+  for (const m of markers) console.log(text.includes(m) ? `OK   ${m}` : `MISS ${m}`)
+}
 process.exit(0)

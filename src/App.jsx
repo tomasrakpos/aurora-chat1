@@ -15,8 +15,17 @@ import { AccountHome, Orders, AccountWishlist, Addresses, Downloads, SupportTick
 import { EmptyState } from './components/ui.jsx'
 
 function ScrollTop() {
-  const { pathname } = useLocation()
-  useEffect(() => { window.scrollTo({ top: 0 }) }, [pathname])
+  const { pathname, hash } = useLocation()
+  useEffect(() => {
+    if (hash) {
+      const el = document.getElementById(hash.slice(1))
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+        return
+      }
+    }
+    window.scrollTo({ top: 0 })
+  }, [pathname, hash])
   return null
 }
 

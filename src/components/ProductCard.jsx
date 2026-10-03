@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { Heart, ShoppingCart, Eye, PhoneCall } from 'lucide-react'
 import { useStore } from '../lib/store.jsx'
 import { effective, discountPct, isBuyable } from '../data/index.js'
+import { faNum } from '../lib/format.js'
 import { ProductVisual } from './media.jsx'
 import { Badge, Rating, PriceBlock, StockLabel } from './ui.jsx'
 
@@ -54,13 +55,22 @@ export default function ProductCard({ product: p, compact = false }) {
         )}
 
         <div className="mt-auto">
-          <PriceBlock price={ep.price} size="sm" />
+          <div className="flex items-center justify-between gap-2">
+            <PriceBlock price={ep.price} size="sm" />
+            {pct > 0 && (
+              <bdi className="shrink-0 rounded-lg bg-hot px-1.5 py-0.5 text-[10px] font-extrabold text-white tnum">{faNum(pct)}٪</bdi>
+            )}
+          </div>
           <div className="mt-1.5"><StockLabel stock={ep.stock} qty={ep.qty} /></div>
         </div>
 
         <div className="relative z-[2] mt-2.5 flex items-center gap-1.5">
           {buyable ? (
-            <button type="button" onClick={onAdd} className="btn btn-primary h-9 flex-1 text-xs">
+            <button
+              type="button"
+              onClick={onAdd}
+              className="flex h-9 flex-1 items-center justify-center gap-1.5 rounded-xl border border-line bg-transparent text-xs font-bold text-sub transition-all duration-200 hover:border-cta hover:bg-cta hover:text-white active:scale-[0.98]"
+            >
               <ShoppingCart size={14} /> افزودن به سبد
             </button>
           ) : ep.price?.inquiry ? (
