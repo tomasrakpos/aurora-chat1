@@ -11,7 +11,12 @@ export default defineConfig(({ isSsrBuild }) => ({
   server: {
     host: true,
     port: 5173,
-    allowedHosts: true
+    allowedHosts: true,
+    headers: {
+      'Cache-Control': 'no-store, no-cache, must-revalidate',
+      Pragma: 'no-cache',
+      Expires: '0'
+    }
   },
   preview: {
     host: true,
