@@ -7,7 +7,7 @@ import ProductCard from './ProductCard.jsx'
 
 /* ------------------------------ اسلایدر قهرمان صفحه اول ------------------------------ */
 export function HeroSlider({ slides }) {
-  const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true, duration: 28, direction: 'rtl' }, Autoplay({ delay: 5500, stopOnInteraction: false }))
+  const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true, duration: 28, direction: 'rtl' }, [Autoplay({ delay: 5500, stopOnInteraction: false })])
   const [selected, setSelected] = useState(0)
   const autoplayRef = useRef(null)
 
