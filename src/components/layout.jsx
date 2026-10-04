@@ -11,6 +11,7 @@ import { CATEGORIES, PRODUCTS, POPULAR_SEARCHES, CATEGORY_TILES, catById, sugges
 import { faNum, normalize } from '../lib/format.js'
 import { ProductVisual } from './media.jsx'
 import { PriceBlock } from './ui.jsx'
+import { LiquidGlassViewport, LiquidGlassButton } from './ui/apple-tahoe-liquid-glass-button'
 
 export const CAT_ICON = {
   gamepad: Gamepad2, cpu: Cpu, pc: Monitor, monitor: Monitor, mouse: Mouse, disc: Disc3,
@@ -401,7 +402,8 @@ export function FloatingNav() {
   useEffect(() => { setActiveIdx(matchIdx(loc.pathname)) }, [loc.pathname])
 
   const barRef = useRef(null), glassRef = useRef(null), pillRef = useRef(null), haloRef = useRef(null)
-  const mvRef = useRef(null), rtRef = useRef(null), cvRef = useRef(null)
+  const mvRef = useRef(null), rtRef = useRef(null), ghostRef = useRef(null)
+  const [bgImage, setBgImage] = useState('')
   const itemRefs = useRef([])
   const api = useRef({})
   const activeIdxRef = useRef(activeIdx)
@@ -413,6 +415,7 @@ export function FloatingNav() {
     if (it.drawer) setDrawer(true)
     else if (it.to) nav(it.to)
   }
+  api.current.setBg = setBgImage
 
   useEffect(() => {
     const bar = barRef.current, glass = glassRef.current, pill = pillRef.current, halo = haloRef.current
@@ -429,149 +432,71 @@ export function FloatingNav() {
     let ox = 0, oy = 0, la = 0, rafId = 0, tintId = 0, t0 = performance.now()
     let disposed = false
 
-    /* ---------- WebGL: شکست نور پشت شیشه ---------- */
-    const cv = cvRef.current
-    let gl = null, G = false
-    const U = {}
-    let TW = 2000, TH = 1125, pgMode = false
-    const dpr = Math.min(window.devicePixelRatio || 1, 2)
-    const VS = 'attribute vec2 p;void main(){gl_Position=vec4(p,0.,1.);}'
-    const FS = 'precision highp float;uniform sampler2D u_t;uniform vec2 u_res,u_img,u_off,u_barC,u_barS,u_pillC,u_pillS;uniform float u_dpr,u_ang,u_scale,u_pg;'
-      + 'vec2 lens(vec2 p,vec2 c,vec2 sz,out float ins){vec2 d=p-c;float ca=cos(u_ang),sa=sin(u_ang);vec2 l=vec2(ca*d.x+sa*d.y,-sa*d.x+ca*d.y);'
-      + 'float R=min(sz.x,sz.y)*.5,hx=max(sz.x*.5-R,0.);vec2 q=vec2(l.x-clamp(l.x,-hx,hx),l.y)/R;float qq=length(q);ins=step(qq,1.);'
-      + 'float m=sin(exp2(2.8*log2(max(qq,1e-4)))*3.14159265);vec2 v=-q*m;return vec2(ca*v.x-sa*v.y,sa*v.x+ca*v.y)*ins;}'
-      + 'vec3 smp(vec2 p){return texture2D(u_t,(p-u_off)/u_img).rgb;}'
-      + 'void main(){vec2 p=vec2(gl_FragCoord.x,u_res.y-gl_FragCoord.y)/u_dpr;float a,b;vec2 v1=lens(p,u_barC,u_barS,a);vec2 v2=lens(p,u_pillC,u_pillS,b);'
-      + 'if(a+b<.5){discard;}'
-      + 'vec2 v=mix(v1,v2*(1.+u_pg),b)*u_scale*.5;float ds=mix(.05,.12,b);gl_FragColor=vec4(smp(p+v*(1.+ds)).r,smp(p+v).g,smp(p+v*(1.-ds)).b,1.);}'
+    /* ---------- عکس زنده‌ی صفحه = پس‌زمینه‌ی شیشه (متریال کامپوننت مایع) ---------- */
+    let capTimer = 0, cropTimer = 0, lastFull = 0, lastCrop = 0, fails = 0
+    let fullCnv = null, fullScale = 1
 
-    function sh(type, src) { const o = gl.createShader(type); gl.shaderSource(o, src); gl.compileShader(o); return o }
-    if (cv) {
-      try {
-        gl = cv.getContext('webgl', { alpha: true, antialias: false }) || cv.getContext('experimental-webgl', { alpha: true, antialias: false })
-      } catch { gl = null }
+    function cropPublish() {
+      if (disposed || !fullCnv) return
+      const vw = window.innerWidth, vh = window.innerHeight
+      const ow = Math.max(1, Math.round(vw * fullScale))
+      const oh = Math.max(1, Math.round(vh * fullScale))
+      const sy = Math.max(0, Math.min(window.scrollY * fullScale, fullCnv.height - oh))
+      const out = document.createElement('canvas')
+      out.width = ow; out.height = oh
+      out.getContext('2d').drawImage(fullCnv, 0, sy, ow, oh, 0, 0, ow, oh)
+      try { api.current.setBg?.(out.toDataURL('image/jpeg', 0.82)) } catch { fails++ }
     }
-    if (gl) {
-      const pr = gl.createProgram()
-      gl.attachShader(pr, sh(gl.VERTEX_SHADER, VS))
-      gl.attachShader(pr, sh(gl.FRAGMENT_SHADER, FS))
-      gl.linkProgram(pr)
-      if (!gl.getProgramParameter(pr, gl.LINK_STATUS)) gl = null
-      else {
-        gl.useProgram(pr)
-        gl.clearColor(0, 0, 0, 0)
-        gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer())
-        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]), gl.STATIC_DRAW)
-        const al = gl.getAttribLocation(pr, 'p')
-        gl.enableVertexAttribArray(al)
-        gl.vertexAttribPointer(al, 2, gl.FLOAT, false, 0, 0)
-        ;['t', 'res', 'img', 'off', 'barC', 'barS', 'pillC', 'pillS', 'dpr', 'ang', 'scale', 'pg'].forEach((n) => { U[n] = gl.getUniformLocation(pr, 'u_' + n) })
-        gl.uniform1i(U.t, 0)
-        const tex = gl.createTexture()
-        gl.bindTexture(gl.TEXTURE_2D, tex)
-        ;[[gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE], [gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE], [gl.TEXTURE_MIN_FILTER, gl.LINEAR], [gl.TEXTURE_MAG_FILTER, gl.LINEAR]]
-          .forEach((q) => gl.texParameteri(gl.TEXTURE_2D, q[0], q[1]))
 
-        function uploadSource(source) {
-          if (disposed || !gl) return
-          gl.bindTexture(gl.TEXTURE_2D, tex)
-          gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, source)
-          if (!G) { G = true; cv.classList.add('on') }
-          sizeCanvas()
-          setStatic()
-          wake()
-        }
-
-        /* عکس‌برداری زنده از خود صفحه برای شکست نور پشت شیشه (با موتور رندر خود مرورگر) */
-        let capTimer = 0, cropTimer = 0, lastFull = 0, lastCrop = 0, fails = 0
-        let fullCnv = null, fullScale = 1
-
-        function cropUpload() {
-          if (disposed || !gl || !fullCnv) return
-          const vw = window.innerWidth, vh = window.innerHeight
-          const ow = Math.max(1, Math.round(vw * fullScale))
-          const oh = Math.max(1, Math.round(vh * fullScale))
-          const sy = Math.max(0, Math.min(window.scrollY * fullScale, fullCnv.height - oh))
-          const out = document.createElement('canvas')
-          out.width = ow; out.height = oh
-          out.getContext('2d').drawImage(fullCnv, 0, sy, ow, oh, 0, 0, ow, oh)
-          TW = ow; TH = oh; pgMode = true
-          uploadSource(out)
-        }
-
-        async function snapFull() {
-          const { toCanvas } = await import('html-to-image')
-          if (disposed || !gl) return
-          const vw = window.innerWidth, vh = window.innerHeight
-          fullScale = Math.min(0.6, 1500 / Math.max(vw, vh))
-          const docH = Math.min(document.body.scrollHeight, window.scrollY + vh * 2 + 300)
-          fullCnv = await toCanvas(document.body, {
-            width: vw, height: docH, pixelRatio: fullScale,
-            backgroundColor: '#0a0c12',
-            filter: (node) => !(node === bar || node === cv || (node.classList && (node.classList.contains('gn-bar') || node.classList.contains('gn-cv'))))
-          })
-          if (disposed || !gl) return
-          cropUpload()
-        }
-
-        function capture(delay = 0) {
-          if (disposed || !gl) return
-          clearTimeout(capTimer)
-          capTimer = setTimeout(async () => {
-            if (disposed || !gl) return
-            lastFull = performance.now()
-            try { await snapFull(); fails = 0 }
-            catch {
-              fails++
-              if (fails === 2) document.documentElement.classList.add('gn-nogl')
-            }
-          }, delay)
-        }
-        function captureScroll() {
-          if (disposed || !gl) return
-          if (!fullCnv) { capture(150); return }
-          if (performance.now() - lastFull > 900) { capture(120); return }
-          const now = performance.now()
-          if (now - lastCrop < 120) {
-            clearTimeout(cropTimer)
-            cropTimer = setTimeout(cropUpload, 130)
-            return
-          }
-          lastCrop = now
-          cropUpload()
-        }
-        api.current.capture = capture
-
-        capture(350)
-        const onWinLoad = () => capture(900)
-        const onScrollCap = () => captureScroll()
-        window.addEventListener('load', onWinLoad)
-        window.addEventListener('scroll', onScrollCap, { passive: true })
-        api.current.glCleanup = () => {
-          clearTimeout(capTimer); clearTimeout(cropTimer)
-          window.removeEventListener('load', onWinLoad)
-          window.removeEventListener('scroll', onScrollCap)
-        }
-      }
+    async function snapFull() {
+      const { toCanvas } = await import('html-to-image')
+      if (disposed) return
+      const vw = window.innerWidth, vh = window.innerHeight
+      fullScale = Math.min(0.6, 1500 / Math.max(vw, vh))
+      const docH = Math.min(document.body.scrollHeight, window.scrollY + vh * 2 + 300)
+      fullCnv = await toCanvas(document.body, {
+        width: vw, height: docH, pixelRatio: fullScale,
+        backgroundColor: '#0a0c12',
+        filter: (node) => !(node === bar || (node.classList && (node.classList.contains('gn-bar') || node.classList.contains('gn-viewport'))))
+      })
+      if (disposed) return
+      cropPublish()
     }
-    if (!gl) document.documentElement.classList.add('gn-nogl')
 
-    function sizeCanvas() { if (cv) { cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr) } }
-    function setStatic() {
-      if (!gl || !G) return
-      let iw, ih, ox0, oy0
-      if (pgMode) { iw = W; ih = H; ox0 = 0; oy0 = 0 }
-      else {
-        const sc = Math.max(W / TW, H / TH)
-        iw = TW * sc; ih = TH * sc
-        ox0 = (W - iw) * 0.62; oy0 = (H - ih) * 0.5
+    function capture(delay = 0) {
+      if (disposed) return
+      clearTimeout(capTimer)
+      capTimer = setTimeout(async () => {
+        if (disposed) return
+        lastFull = performance.now()
+        try { await snapFull(); fails = 0 }
+        catch { fails++ }
+      }, delay)
+    }
+    function captureScroll() {
+      if (disposed) return
+      if (!fullCnv) { capture(150); return }
+      if (performance.now() - lastFull > 900) { capture(120); return }
+      const now = performance.now()
+      if (now - lastCrop < 120) {
+        clearTimeout(cropTimer)
+        cropTimer = setTimeout(cropPublish, 130)
+        return
       }
-      gl.viewport(0, 0, cv.width, cv.height)
-      gl.uniform2f(U.res, cv.width, cv.height)
-      gl.uniform1f(U.dpr, dpr)
-      gl.uniform2f(U.img, iw, ih)
-      gl.uniform2f(U.off, ox0, oy0)
-      gl.uniform1f(U.scale, 44)
+      lastCrop = now
+      cropPublish()
+    }
+    api.current.capture = capture
+
+    capture(350)
+    const onWinLoad = () => capture(900)
+    const onScrollCap = () => captureScroll()
+    window.addEventListener('load', onWinLoad)
+    window.addEventListener('scroll', onScrollCap, { passive: true })
+    api.current.glCleanup = () => {
+      clearTimeout(capTimer); clearTimeout(cropTimer)
+      window.removeEventListener('load', onWinLoad)
+      window.removeEventListener('scroll', onScrollCap)
     }
 
     function physics() {
@@ -624,15 +549,11 @@ export function FloatingNav() {
       hh.setProperty('--g', gg)
       gnLighten(glass, MB, S.cx, S.cy, S.th, W, H)
       gnLighten(pill, MP, px, py, S.th, W, H)
-      if (G) {
-        gl.uniform2f(U.barC, S.cx, S.cy)
-        gl.uniform2f(U.barS, BW, BH)
-        gl.uniform2f(U.pillC, px, py)
-        gl.uniform2f(U.pillS, w, h)
-        gl.uniform1f(U.ang, S.th)
-        gl.uniform1f(U.pg, 0.3 * Gl.g)
-        gl.clear(gl.COLOR_BUFFER_BIT)
-        gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4)
+      const gw = ghostRef.current
+      if (gw) {
+        gw.style.width = BW + 'px'
+        gw.style.height = BH + 'px'
+        gw.style.transform = bar.style.transform
       }
     }
 
@@ -667,8 +588,6 @@ export function FloatingNav() {
       }
       tgtC = slot[idx] ?? tgtC
       P.xL = tgtC - PW / 2; P.xR = tgtC + PW / 2; P.vL = P.vR = 0
-      sizeCanvas()
-      if (G) setStatic()
       api.current.capture?.(250)
       render()
     }
@@ -749,7 +668,18 @@ export function FloatingNav() {
 
   return (
     <>
-      <canvas ref={cvRef} className="gn-cv" aria-hidden="true" />
+      {/* ویوپورت شیشه‌ی مایع: عکس زنده‌ی سایت + شکست نور داخل ناوبر (کامپوننت آماده) */}
+      {bgImage && (
+        <LiquidGlassViewport
+          bgImage={bgImage}
+          fallbackMode="webgl"
+          className="gn-viewport pointer-events-none fixed inset-0 z-[42] !bg-transparent"
+        >
+          <div ref={ghostRef} className="absolute left-0 top-0" style={{ width: 430, height: 76 }}>
+            <LiquidGlassButton className="gn-ghost absolute inset-0 !p-0" aria-hidden="true" tabIndex={-1} />
+          </div>
+        </LiquidGlassViewport>
+      )}
       <nav ref={barRef} className="gn-bar" aria-label="ناوبری اصلی">
         <i ref={glassRef} className="gn-gl gn-glass" aria-hidden="true" />
         <i ref={haloRef} className="gn-halo" aria-hidden="true" />
