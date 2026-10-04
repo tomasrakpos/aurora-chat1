@@ -492,7 +492,7 @@ export function FloatingNav() {
     const cv = cvRef.current
     let gl = null, G = false
     const U = {}
-    let TW = 2000, TH = 1125
+    let TW = 2000, TH = 1125, pgMode = false
     const dpr = Math.min(window.devicePixelRatio || 1, 2)
     const VS = 'attribute vec2 p;void main(){gl_Position=vec4(p,0.,1.);}'
     const FS = 'precision highp float;uniform sampler2D u_t;uniform vec2 u_res,u_img,u_off,u_barC,u_barS,u_pillC,u_pillS;uniform float u_dpr,u_ang,u_scale,u_pg;'
@@ -527,25 +527,81 @@ export function FloatingNav() {
         ;['t', 'res', 'img', 'off', 'barC', 'barS', 'pillC', 'pillS', 'dpr', 'ang', 'scale', 'pg'].forEach((n) => { U[n] = gl.getUniformLocation(pr, 'u_' + n) })
         gl.uniform1i(U.t, 0)
         const tex = gl.createTexture()
-        const im = new Image()
-        im.onload = () => {
+        gl.bindTexture(gl.TEXTURE_2D, tex)
+        ;[[gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE], [gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE], [gl.TEXTURE_MIN_FILTER, gl.LINEAR], [gl.TEXTURE_MAG_FILTER, gl.LINEAR]]
+          .forEach((q) => gl.texParameteri(gl.TEXTURE_2D, q[0], q[1]))
+
+        function uploadSource(source) {
           if (disposed || !gl) return
-          const c = document.createElement('canvas')
-          const k = Math.min(1, 2048 / Math.max(im.width, im.height))
-          TW = c.width = Math.round(im.width * k)
-          TH = c.height = Math.round(im.height * k)
-          c.getContext('2d').drawImage(im, 0, 0, TW, TH)
           gl.bindTexture(gl.TEXTURE_2D, tex)
-          gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, c)
-          ;[[gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE], [gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE], [gl.TEXTURE_MIN_FILTER, gl.LINEAR], [gl.TEXTURE_MAG_FILTER, gl.LINEAR]]
-            .forEach((q) => gl.texParameteri(gl.TEXTURE_2D, q[0], q[1]))
-          G = true
+          gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, source)
+          if (!G) { G = true; cv.classList.add('on') }
           sizeCanvas()
           setStatic()
-          cv.classList.add('on')
           wake()
         }
-        im.src = 'data:image/svg+xml,' + encodeURIComponent(gnNature())
+
+        /* عکس‌برداری زنده از خود صفحه برای شکست نور پشت شیشه */
+        let capTimer = 0, lastCap = 0, pendingCap = false, fails = 0
+        function capture(delay = 0) {
+          if (disposed || !gl) return
+          clearTimeout(capTimer)
+          capTimer = setTimeout(async () => {
+            if (disposed || !gl) return
+            const now = performance.now()
+            if (now - lastCap < 300) {
+              if (!pendingCap) { pendingCap = true; setTimeout(() => { pendingCap = false; capture(0) }, 320) }
+              return
+            }
+            lastCap = now
+            try {
+              const html2canvas = (await import('html2canvas')).default
+              if (disposed || !gl) return
+              const vw = window.innerWidth, vh = window.innerHeight
+              const cnv = await html2canvas(document.body, {
+                x: 0, y: window.scrollY, width: vw, height: vh,
+                windowWidth: vw, windowHeight: vh,
+                scale: Math.min(0.55, 1500 / Math.max(vw, vh)),
+                backgroundColor: '#0a0c12', logging: false,
+                ignoreElements: (el) => el === cv || el === bar || (el.classList && (el.classList.contains('gn-cv') || el.classList.contains('gn-bar')))
+              })
+              if (disposed || !gl) return
+              TW = cnv.width; TH = cnv.height; pgMode = true
+              uploadSource(cnv)
+              fails = 0
+            } catch {
+              fails++
+              if (fails === 2) loadNatureFallback()
+            }
+          }, delay)
+        }
+        api.current.capture = capture
+
+        function loadNatureFallback() {
+          const im = new Image()
+          im.onload = () => {
+            if (disposed || !gl) return
+            const c = document.createElement('canvas')
+            const k = Math.min(1, 2048 / Math.max(im.width, im.height))
+            TW = c.width = Math.round(im.width * k)
+            TH = c.height = Math.round(im.height * k)
+            c.getContext('2d').drawImage(im, 0, 0, TW, TH)
+            pgMode = false
+            uploadSource(c)
+          }
+          im.src = 'data:image/svg+xml,' + encodeURIComponent(gnNature())
+        }
+
+        capture(350)
+        const onWinLoad = () => capture(900)
+        const onScrollCap = () => capture(120)
+        window.addEventListener('load', onWinLoad)
+        window.addEventListener('scroll', onScrollCap, { passive: true })
+        api.current.glCleanup = () => {
+          clearTimeout(capTimer)
+          window.removeEventListener('load', onWinLoad)
+          window.removeEventListener('scroll', onScrollCap)
+        }
       }
     }
     if (!gl) document.documentElement.classList.add('gn-nogl')
@@ -553,12 +609,18 @@ export function FloatingNav() {
     function sizeCanvas() { if (cv) { cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr) } }
     function setStatic() {
       if (!gl || !G) return
-      const sc = Math.max(W / TW, H / TH), iw = TW * sc, ih = TH * sc
+      let iw, ih, ox0, oy0
+      if (pgMode) { iw = W; ih = H; ox0 = 0; oy0 = 0 }
+      else {
+        const sc = Math.max(W / TW, H / TH)
+        iw = TW * sc; ih = TH * sc
+        ox0 = (W - iw) * 0.62; oy0 = (H - ih) * 0.5
+      }
       gl.viewport(0, 0, cv.width, cv.height)
       gl.uniform2f(U.res, cv.width, cv.height)
       gl.uniform1f(U.dpr, dpr)
       gl.uniform2f(U.img, iw, ih)
-      gl.uniform2f(U.off, (W - iw) * 0.62, (H - ih) * 0.5)
+      gl.uniform2f(U.off, ox0, oy0)
       gl.uniform1f(U.scale, 44)
     }
 
@@ -657,6 +719,7 @@ export function FloatingNav() {
       P.xL = tgtC - PW / 2; P.xR = tgtC + PW / 2; P.vL = P.vR = 0
       sizeCanvas()
       if (G) setStatic()
+      api.current.capture?.(250)
       render()
     }
 
@@ -715,6 +778,7 @@ export function FloatingNav() {
 
     return () => {
       disposed = true
+      api.current.glCleanup?.()
       cancelAnimationFrame(rafId); cancelAnimationFrame(tintId); clearTimeout(rz)
       bar.removeEventListener('pointerdown', onBarDown)
       bar.removeEventListener('pointermove', onBarMove)
@@ -731,6 +795,7 @@ export function FloatingNav() {
   }, [])
 
   useEffect(() => { api.current.sync?.(activeIdx) }, [activeIdx])
+  useEffect(() => { api.current.capture?.(450) }, [loc.pathname])
 
   return (
     <>
