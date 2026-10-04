@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react'
 import { Routes, Route, useLocation, Link } from 'react-router-dom'
-import { Header, MobileNav, Footer, Toasts } from './components/layout.jsx'
+import { Header, MobileNav, Footer, Toasts, FloatingNav } from './components/layout.jsx'
 import Home from './pages/Home.jsx'
 import Catalog from './pages/Catalog.jsx'
 import ProductDetail from './pages/ProductDetail.jsx'
@@ -47,6 +47,7 @@ export default function App() {
       <ScrollTop />
       <div className="hidden md:block"><Header /></div>
       <MobileNav />
+      <FloatingNav />
 
       <div className="flex-1">
         <Routes>

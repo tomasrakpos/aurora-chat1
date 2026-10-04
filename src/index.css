@@ -213,3 +213,74 @@ body {
 .safe-bottom { padding-bottom: env(safe-area-inset-bottom, 0px); }
 
 .ltr { direction: ltr; unicode-bidi: embed; }
+
+/* ------------------------------ ناوبر شیشه‌ای شناور ------------------------------ */
+.gn-bar {
+  position: fixed; z-index: 45; left: 0; top: 0;
+  width: min(94vw, 430px); height: 76px; border-radius: 38px; padding: 6px;
+  box-sizing: border-box; display: flex; touch-action: none; transform-origin: 50% 50%;
+}
+.gn-gl {
+  position: absolute; pointer-events: none; --cos: 0; --sin: 1; --rim: .6;
+  background:
+    radial-gradient(circle at calc(50% - var(--cos) * 50%) calc(50% - var(--sin) * 50%), rgba(255,255,255,.2) 0%, transparent 60%),
+    color-mix(in srgb, white 18%, transparent);
+  backdrop-filter: blur(14px) saturate(170%); -webkit-backdrop-filter: blur(14px) saturate(170%);
+  box-shadow:
+    inset 0 0 0 1px color-mix(in srgb, white calc(var(--rim) * 20%), transparent),
+    inset calc(var(--cos) * 1.8px) calc(var(--sin) * 3px) 0 -2px color-mix(in srgb, white calc(var(--rim) * 90%), transparent),
+    inset calc(var(--cos) * -2px) calc(var(--sin) * -2px) 0 -2px color-mix(in srgb, white calc(var(--rim) * 80%), transparent),
+    inset calc(var(--cos) * -3px) calc(var(--sin) * -8px) 1px -6px color-mix(in srgb, white calc(var(--rim) * 60%), transparent),
+    inset calc(var(--cos) * -.3px) calc(var(--sin) * -1px) 4px 0 color-mix(in srgb, black 12%, transparent),
+    inset calc(var(--cos) * -1.5px) calc(var(--sin) * 2.5px) 0 -2px color-mix(in srgb, black 20%, transparent),
+    inset calc(var(--cos) * 0px) calc(var(--sin) * 3px) 4px -2px color-mix(in srgb, black 20%, transparent),
+    inset calc(var(--cos) * 2px) calc(var(--sin) * -6.5px) 1px -4px color-mix(in srgb, black 10%, transparent),
+    calc(var(--cos) * 4px) calc(var(--sin) * 4px) 10px 0 color-mix(in srgb, black 15%, transparent),
+    calc(var(--cos) * 9px) calc(var(--sin) * 9px) 18px 0 color-mix(in srgb, black 10%, transparent);
+}
+.gn-gl::after {
+  content: ""; position: absolute; inset: 0; border-radius: inherit; padding: 1px; background: var(--rg, none);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); mask-composite: exclude;
+  opacity: calc(.62 + var(--rim) * .24);
+}
+.gn-glass { inset: 0; border-radius: inherit; }
+.gn-pill {
+  left: 0; top: 6px; width: 80px; height: 64px; border-radius: 32px;
+  background-color: color-mix(in srgb, var(--tc, #fff) 22%, rgba(255,255,255,.14));
+}
+.gn-pill::before {
+  content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
+  background: radial-gradient(circle at var(--gx,50%) var(--gy,50%), #fff 0%, color-mix(in srgb, var(--tc,#fff) 55%, white) 30%, transparent 74%);
+  opacity: calc(var(--g, 0) * .85);
+}
+.gn-pill::after { opacity: calc(.62 + var(--rim) * .24 + var(--g, 0) * .3); }
+.gn-halo {
+  position: absolute; left: 0; top: 6px; width: 80px; height: 64px; border-radius: 32px; pointer-events: none;
+  background: var(--tc, #fff); filter: blur(13px); transform: scale(1.06); opacity: calc(.3 + var(--g, 0) * .7);
+}
+.gn-it {
+  flex: 1; position: relative; z-index: 2; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
+  border: 0; background: none; color: rgba(255,255,255,.85);
+  font: 700 11px Vazirmatn, system-ui, sans-serif; cursor: pointer; outline: none;
+  text-shadow: 0 1px 6px rgba(0,0,0,.55); transition: color .25s; -webkit-tap-highlight-color: transparent;
+}
+.gn-it[aria-current="true"] { color: #5ac0ff; }
+.gn-it:focus-visible { box-shadow: 0 0 0 2px #fff; border-radius: 30px; }
+.gn-it svg { filter: drop-shadow(0 1px 4px rgba(0,0,0,.5)); }
+.gn-bd {
+  position: absolute; top: 8px; left: calc(50% + 6px); min-width: 18px; height: 18px; padding: 0 5px; box-sizing: border-box;
+  border-radius: 9px; background: #ff3b30; color: #fff; font: 700 11px/18px Vazirmatn, system-ui, sans-serif;
+  text-align: center; text-shadow: none; box-shadow: 0 0 0 2px rgba(255,255,255,.28);
+}
+.gn-hd {
+  position: absolute; z-index: 3; top: -52px; width: 40px; height: 40px; padding: 0; border-radius: 50%;
+  border: 1px solid rgba(255,255,255,.38); display: grid; place-items: center; cursor: grab; touch-action: none; color: #fff;
+  background: color-mix(in srgb, white 18%, transparent);
+  backdrop-filter: blur(8px) saturate(160%); -webkit-backdrop-filter: blur(8px) saturate(160%);
+  box-shadow: 0 4px 14px rgba(0,0,0,.28), inset 0 1px 0 rgba(255,255,255,.5);
+}
+.gn-hd:active { cursor: grabbing; }
+.gn-hd:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+.gn-mv { left: calc(50% - 46px); }
+.gn-rt { left: calc(50% + 6px); }

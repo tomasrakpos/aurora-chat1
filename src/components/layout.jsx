@@ -4,7 +4,7 @@ import {
   Search, ShoppingCart, Heart, User, Home, LayoutGrid, Gamepad2, Cpu, Monitor, Mouse,
   Disc3, Gift, Cable, Mic, Armchair, Puzzle, X, ChevronDown, ChevronLeft, Menu, Headset, LogOut,
   Package, MapPin, LifeBuoy, Shield, ShieldCheck, Bell, Download, Settings, Instagram, Send,
-  MessageCircle, Zap, Flame, Truck, CreditCard
+  MessageCircle, Zap, Flame, Truck, CreditCard, Move, RotateCw
 } from 'lucide-react'
 import { useStore } from '../lib/store.jsx'
 import { CATEGORIES, PRODUCTS, POPULAR_SEARCHES, CATEGORY_TILES, catById, suggestProducts, productById } from '../data/index.js'
@@ -316,65 +316,310 @@ export function Header() {
   )
 }
 
-/* ------------------------------ جستجوی موبایل ------------------------------ */
-function MobileSearch({ open, onClose }) {
-  if (!open) return null
-  return (
-    <div className="fixed inset-0 z-50 bg-base">
-      <div className="container-x flex items-center gap-3 pt-4">
-        <div className="flex-1"><SearchBox autoFocus onNavigate={onClose} mobile /></div>
-        <button onClick={onClose} aria-label="بستن جستجو" className="btn btn-ghost h-10 w-10 p-0"><X size={18} /></button>
-      </div>
-      <p className="container-x mt-6 text-xs text-mute">نتایج پیشنهادی حین تایپ نمایش داده می‌شود.</p>
-    </div>
-  )
+/* ------------------------------ ناوبر شیشه‌ای شناور: تحلیل نور ------------------------------ */
+const GN_BINS = 24
+
+function gnMkMap(w, h) {
+  const R = Math.min(w, h) / 2
+  const a = []
+  for (let y = 0; y < h; y += 2) {
+    for (let x = 0; x < w; x += 2) {
+      const ux = (x - Math.min(Math.max(x, R), w - R)) / R
+      const uy = (y - h / 2) / R
+      const q = Math.hypot(ux, uy)
+      if (q > 1) continue
+      const m = Math.sin(Math.pow(q, 2.8) * Math.PI)
+      a.push(-ux * m, -uy * m)
+    }
+  }
+  return { n: (w * h) / 4, a }
 }
 
-/* ------------------------------ ناوبری موبایل ------------------------------ */
-export function MobileNav() {
+function gnAnalyze(M, az) {
+  const pf = new Array(GN_BINS).fill(0)
+  const ct = new Array(GN_BINS).fill(0)
+  let sx = 0, sy = 0, sm = 0, mx = 0
+  const a = M.a
+  for (let i = 0; i < a.length; i += 2) {
+    const bx = a[i], by = a[i + 1]
+    const mg = Math.hypot(bx, by)
+    if (mg < 0.02) continue
+    const an = Math.atan2(by, bx)
+    const fc = Math.max(0, Math.cos(an - az))
+    const br = mg * (0.35 + 0.65 * fc)
+    sx += Math.cos(an) * br; sy += Math.sin(an) * br; sm += br
+    let bn = Math.floor(((an + Math.PI) / (2 * Math.PI)) * GN_BINS) % GN_BINS
+    if (bn < 0) bn += GN_BINS
+    pf[bn] += br; ct[bn]++
+  }
+  for (let b = 0; b < GN_BINS; b++) { if (ct[b]) pf[b] /= ct[b]; if (pf[b] > mx) mx = pf[b] }
+  if (mx > 0) for (let b = 0; b < GN_BINS; b++) pf[b] /= mx
+  return { prof: pf, dom: Math.atan2(sy, sx), mag: Math.min(1, (sm / Math.max(1, M.n)) * 6) }
+}
+
+function gnConic(pf, deg) {
+  const st = []
+  for (let b = 0; b <= GN_BINS; b++) st.push(`rgba(255,255,255,${(0.07 + pf[b % GN_BINS] * 0.63).toFixed(3)}) ${((b / GN_BINS) * 360).toFixed(1)}deg`)
+  return `conic-gradient(from ${deg.toFixed(1)}deg at 50% 50%, ${st.join(', ')})`
+}
+
+function gnLighten(el, M, cx, cy, th, W, H) {
+  const az = Math.atan2(0 - cy / H, 0.5 - cx / W) - th
+  const k = az.toFixed(2)
+  if (el._k === k) return
+  el._k = k
+  const A = gnAnalyze(M, az)
+  const it = 0.4 + A.mag * 0.6
+  const st = el.style
+  st.setProperty('--cos', (-Math.cos(A.dom) * it).toFixed(3))
+  st.setProperty('--sin', (-Math.sin(A.dom) * it).toFixed(3))
+  st.setProperty('--rim', A.mag.toFixed(3))
+  st.setProperty('--rg', gnConic(A.prof, (A.dom * 180) / Math.PI + 90))
+}
+
+/* ------------------------------ ناوبر شیشه‌ای شناور ------------------------------ */
+export function FloatingNav() {
   const { cart, wishlist } = useStore()
   const [drawer, setDrawer] = useState(false)
-  const [search, setSearch] = useState(false)
+  const nav = useNavigate()
   const loc = useLocation()
   const cartCount = cart.reduce((s, i) => s + i.qty, 0)
-
-  useEffect(() => { setDrawer(false) }, [loc.pathname])
+  useEffect(() => setDrawer(false), [loc.pathname])
 
   const items = [
-    { to: '/', icon: Home, label: 'خانه' },
-    { key: 'cats', icon: LayoutGrid, label: 'دسته‌ها' },
-    { to: '/cart', icon: ShoppingCart, label: 'سبد', badge: cartCount },
-    { to: '/wishlist', icon: Heart, label: 'پسندیده‌ها', badge: wishlist.length },
-    { to: '/account', icon: User, label: 'پروفایل' }
+    { id: 'home', to: '/', label: 'خانه', icon: Home },
+    { id: 'cats', label: 'دسته‌ها', icon: LayoutGrid, drawer: true },
+    { id: 'cart', to: '/cart', label: 'سبد', icon: ShoppingCart, badge: cartCount },
+    { id: 'wish', to: '/wishlist', label: 'پسندیده', icon: Heart, badge: wishlist.length },
+    { id: 'me', to: '/account', label: 'پروفایل', icon: User }
   ]
+  const matchIdx = (path) => {
+    const i = items.findIndex((it) => (it.to === '/' ? path === '/' : it.to && path.startsWith(it.to)))
+    return i < 0 ? 0 : i
+  }
+  const [activeIdx, setActiveIdx] = useState(() => matchIdx(loc.pathname))
+  useEffect(() => { setActiveIdx(matchIdx(loc.pathname)) }, [loc.pathname])
+
+  const barRef = useRef(null), glassRef = useRef(null), pillRef = useRef(null), haloRef = useRef(null)
+  const mvRef = useRef(null), rtRef = useRef(null)
+  const itemRefs = useRef([])
+  const api = useRef({})
+  const activeIdxRef = useRef(activeIdx)
+  useEffect(() => { activeIdxRef.current = activeIdx }, [activeIdx])
+
+  api.current.select = (i) => {
+    const it = items[i]
+    if (!it) return
+    if (it.drawer) setDrawer(true)
+    else if (it.to) nav(it.to)
+  }
+
+  useEffect(() => {
+    const bar = barRef.current, glass = glassRef.current, pill = pillRef.current, halo = haloRef.current
+    const mv = mvRef.current, rt = rtRef.current
+    if (!bar || !glass || !pill || !halo || !mv || !rt) return undefined
+    const cl = (v, a, b) => Math.min(Math.max(v, a), b)
+    let W = 0, H = 0, BW = 0, BH = 0, PW = 0, PH = 0, MB = null, MP = null
+    const S = { cx: 0, cy: 0, tcx: 0, tcy: 0, vx: 0, vy: 0, th: 0, tth: 0, vth: 0 }
+    const P = { xL: 0, xR: 0, vL: 0, vR: 0, pf: 1, tpf: 1 }
+    const Gl = { g: 0, tg: 0 }
+    let PV = 0, LX = 0, LY = 0, lx = 0, lt = 0
+    let slot = [], lo = 0, hi = 0, idx = 0, tgtC = 0
+    let drag = false, mode = null, first = true, run = false, last = 0, rz = 0
+    let ox = 0, oy = 0, la = 0, rafId = 0, tintId = 0, t0 = performance.now()
+
+    function physics() {
+      S.vx = (S.vx + (S.tcx - S.cx) * 0.14) * 0.74; S.cx += S.vx
+      S.vy = (S.vy + (S.tcy - S.cy) * 0.14) * 0.74; S.cy += S.vy
+      S.vth = (S.vth + (S.tth - S.th) * 0.12) * 0.76; S.th += S.vth
+      P.pf += (P.tpf - P.pf) * 0.16; PV *= 0.88
+      Gl.g += (Gl.tg - Gl.g) * (Gl.tg > Gl.g ? 0.4 : 0.045)
+      const hw = (PW * P.pf) / 2, c = (P.xL + P.xR) / 2
+      const d = Math.abs(PV) > 2 ? (PV > 0 ? 1 : -1) : (tgtC >= c ? 1 : -1)
+      const E = Math.min(120, Math.max(Math.abs(PV) * 3.2, Math.abs(tgtC - c) * 0.5))
+      const kl = drag ? 0.22 : 0.12, dl = drag ? 0.7 : 0.775
+      const tR = tgtC + hw + (d < 0 ? E : 0), tL = tgtC - hw - (d > 0 ? E : 0)
+      const MW = PW * 3.3
+      if (d > 0) { P.vR = (P.vR + (tR - P.xR) * kl) * dl; P.vL = (P.vL + (tL - P.xL) * 0.032) * 0.85 }
+      else { P.vL = (P.vL + (tL - P.xL) * kl) * dl; P.vR = (P.vR + (tR - P.xR) * 0.032) * 0.85 }
+      P.xL += P.vL; P.xR += P.vR
+      if (P.xL < -2) { P.xL = -2; P.vL = 0 }
+      if (P.xR > BW + 2) { P.xR = BW + 2; P.vR = 0 }
+      if (P.xR - P.xL > MW) { if (d > 0) { P.xL = P.xR - MW; P.vL = P.vR } else { P.xR = P.xL + MW; P.vR = P.vL } }
+      if (P.xR - P.xL < PW * 0.7) { const m = (P.xL + P.xR) / 2; P.xL = m - PW * 0.35; P.xR = m + PW * 0.35; P.vL = P.vR = 0 }
+    }
+
+    function moving() {
+      const hw = (PW * P.tpf) / 2
+      const e = Math.abs(S.tcx - S.cx) + Math.abs(S.tcy - S.cy) + Math.abs(S.vx) + Math.abs(S.vy)
+        + Math.abs(P.xL - (tgtC - hw)) + Math.abs(P.xR - (tgtC + hw)) + Math.abs(P.vL) + Math.abs(P.vR)
+        + Math.abs(P.pf - P.tpf) * 50 + (Math.abs(S.tth - S.th) + Math.abs(S.vth)) * 200
+      return drag || mode || Gl.g > 0.01 || Gl.tg > 0 || e + Math.abs(PV) > 0.15
+    }
+
+    function render() {
+      if (!PW || !slot.length) return
+      const c = Math.cos(S.th), s = Math.sin(S.th)
+      const w = P.xR - P.xL, pc = (P.xL + P.xR) / 2
+      const hs = cl(Math.pow((PW * P.pf) / w, 0.45), 0.72, 1.15)
+      const h = Math.min(PH * P.pf * hs, w, BH + 6)
+      const px = S.cx + c * (pc - BW / 2), py = S.cy + s * (pc - BW / 2)
+      const st = pill.style
+      bar.style.transform = `translate(${(S.cx - BW / 2).toFixed(2)}px,${(S.cy - BH / 2).toFixed(2)}px) rotate(${S.th.toFixed(4)}rad)`
+      st.left = P.xL.toFixed(2) + 'px'; st.width = w.toFixed(2) + 'px'
+      st.top = ((BH - h) / 2).toFixed(2) + 'px'; st.height = h.toFixed(2) + 'px'
+      st.borderRadius = (Math.min(w, h) / 2).toFixed(1) + 'px'
+      const hh = halo.style
+      const gx = cl((LX - P.xL) / w, 0, 1) * 100
+      const gy = cl((LY - (BH - h) / 2) / h, 0, 1) * 100
+      const gg = Gl.g.toFixed(3)
+      hh.left = st.left; hh.width = st.width; hh.top = st.top; hh.height = st.height; hh.borderRadius = st.borderRadius
+      st.setProperty('--gx', gx.toFixed(1) + '%'); st.setProperty('--gy', gy.toFixed(1) + '%'); st.setProperty('--g', gg)
+      hh.setProperty('--g', gg)
+      gnLighten(glass, MB, S.cx, S.cy, S.th, W, H)
+      gnLighten(pill, MP, px, py, S.th, W, H)
+    }
+
+    function loop(t) {
+      const n = cl(Math.round((t - last) / 16.67), 1, 4); last = t
+      let k = n; while (k--) physics()
+      render()
+      if (moving()) rafId = requestAnimationFrame(loop)
+      else run = false
+    }
+    function wake() { if (!run) { run = true; last = performance.now(); rafId = requestAnimationFrame(loop) } }
+
+    function build() {
+      W = window.innerWidth; H = window.innerHeight
+      BW = bar.offsetWidth; BH = bar.offsetHeight
+      if (!BW) return
+      PH = BH - 12
+      const its = itemRefs.current.filter(Boolean)
+      if (its.length) PW = Math.round(its[0].offsetWidth - 4)
+      slot = its.map((b) => b.offsetLeft + b.offsetWidth / 2)
+      lo = Math.min(...slot); hi = Math.max(...slot)
+      MB = gnMkMap(BW, BH); MP = gnMkMap(PW, PH)
+      glass._k = pill._k = null
+      if (first) {
+        idx = activeIdxRef.current
+        S.cx = S.tcx = W / 2
+        S.cy = S.tcy = H - 24 - BH / 2
+        first = false
+      } else {
+        S.cx = S.tcx = cl(S.cx, 30, W - 30)
+        S.cy = S.tcy = cl(S.cy, 100, H - 40)
+      }
+      tgtC = slot[idx] ?? tgtC
+      P.xL = tgtC - PW / 2; P.xR = tgtC + PW / 2; P.vL = P.vR = 0
+      render()
+    }
+
+    function locPt(e) {
+      const dx = e.clientX - S.cx, dy = e.clientY - S.cy
+      const c = Math.cos(S.th), s = Math.sin(S.th)
+      LX = c * dx + s * dy + BW / 2
+      LY = -s * dx + c * dy + BH / 2
+      return LX
+    }
+    const soft = (x) => (x < lo ? lo - Math.min(34, (lo - x) * 0.3) : x > hi ? hi + Math.min(34, (x - hi) * 0.3) : x)
+    function near(x) { let b = 0; slot.forEach((s0, i) => { if (Math.abs(s0 - x) < Math.abs(slot[b] - x)) b = i }); return b }
+    function pick(i) {
+      idx = i; tgtC = slot[i] ?? tgtC
+      api.current.setActive?.(i)
+      api.current.select?.(i)
+      wake()
+    }
+
+    api.current.sync = (i) => { if (slot.length) { idx = i; tgtC = slot[i]; wake() } }
+    api.current.kb = (i) => { Gl.g = 0.8; pick(i) }
+    api.current.zeroRot = () => { S.tth = 0; wake() }
+    api.current.setActive = setActiveIdx
+
+    const onBarDown = (e) => { drag = true; P.tpf = 1.16; Gl.tg = 1; Gl.g = Math.max(Gl.g, 0.55); PV = 0; bar.setPointerCapture(e.pointerId); lx = locPt(e); lt = e.timeStamp; tgtC = soft(lx); wake() }
+    const onBarMove = (e) => { if (!drag) return; const x = locPt(e); const dt = Math.max(1, (e.timeStamp - lt) / 16.67); PV += ((x - lx) / dt - PV) * 0.55; lx = x; lt = e.timeStamp; tgtC = soft(x) }
+    const onBarUp = (e) => { if (!drag) return; drag = false; P.tpf = 1; Gl.tg = 0; pick(near(locPt(e))) }
+    const onBarCancel = () => { drag = false; P.tpf = 1; Gl.tg = 0; pick(idx) }
+    const onMvDown = (e) => { e.stopPropagation(); mode = 'm'; ox = e.clientX - S.tcx; oy = e.clientY - S.tcy; mv.setPointerCapture(e.pointerId); wake() }
+    const onMvMove = (e) => { if (mode === 'm') { S.tcx = cl(e.clientX - ox, 30, W - 30); S.tcy = cl(e.clientY - oy, 100, H - 40); wake() } }
+    const onRtDown = (e) => { e.stopPropagation(); mode = 'r'; la = Math.atan2(e.clientY - S.cy, e.clientX - S.cx); rt.setPointerCapture(e.pointerId); wake() }
+    const onRtMove = (e) => { if (mode !== 'r') return; const a = Math.atan2(e.clientY - S.cy, e.clientX - S.cx); let d = a - la; if (d > Math.PI) d -= 2 * Math.PI; if (d < -Math.PI) d += 2 * Math.PI; la = a; S.tth += d; wake() }
+    const onHandleUp = () => { mode = null; wake() }
+    const onResize = () => { clearTimeout(rz); rz = setTimeout(build, 150) }
+
+    bar.addEventListener('pointerdown', onBarDown)
+    bar.addEventListener('pointermove', onBarMove)
+    bar.addEventListener('pointerup', onBarUp)
+    bar.addEventListener('pointercancel', onBarCancel)
+    mv.addEventListener('pointerdown', onMvDown)
+    mv.addEventListener('pointermove', onMvMove)
+    mv.addEventListener('pointerup', onHandleUp)
+    rt.addEventListener('pointerdown', onRtDown)
+    rt.addEventListener('pointermove', onRtMove)
+    rt.addEventListener('pointerup', onHandleUp)
+    window.addEventListener('resize', onResize)
+
+    build()
+    wake()
+
+    const tint = (t) => {
+      bar.style.setProperty('--tc', `hsl(${(119 - 91 * Math.cos(((t - t0) / 7000) * 6.2832)).toFixed(1)},100%,62%)`)
+      tintId = requestAnimationFrame(tint)
+    }
+    tintId = requestAnimationFrame(tint)
+
+    return () => {
+      cancelAnimationFrame(rafId); cancelAnimationFrame(tintId); clearTimeout(rz)
+      bar.removeEventListener('pointerdown', onBarDown)
+      bar.removeEventListener('pointermove', onBarMove)
+      bar.removeEventListener('pointerup', onBarUp)
+      bar.removeEventListener('pointercancel', onBarCancel)
+      mv.removeEventListener('pointerdown', onMvDown)
+      mv.removeEventListener('pointermove', onMvMove)
+      mv.removeEventListener('pointerup', onHandleUp)
+      rt.removeEventListener('pointerdown', onRtDown)
+      rt.removeEventListener('pointermove', onRtMove)
+      rt.removeEventListener('pointerup', onHandleUp)
+      window.removeEventListener('resize', onResize)
+    }
+  }, [])
+
+  useEffect(() => { api.current.sync?.(activeIdx) }, [activeIdx])
 
   return (
     <>
-      {/* نوار پایین شیشه‌ای */}
-      <nav className="fixed inset-x-0 bottom-0 z-40 pb-[max(env(safe-area-inset-bottom),10px)] md:hidden" aria-label="ناوبری موبایل">
-        <div className="glass mx-3 flex items-stretch justify-between rounded-[1.6rem] px-2 py-2">
-          {items.map((it) => {
-            const active = it.to ? loc.pathname === it.to : false
-            const Comp = it.to ? Link : 'button'
-            return (
-              <Comp key={it.label} {...(it.to ? { to: it.to } : { onClick: () => setDrawer(true) })}
-                className={`relative flex flex-1 flex-col items-center gap-1 rounded-2xl py-1.5 transition-all duration-300 ${active ? 'text-brand-2' : 'text-sub'}`}>
-                <span className={`flex h-7 w-12 items-center justify-center rounded-full transition-all duration-300 ${active ? 'bg-brand/15' : ''}`}>
-                  <it.icon size={19} className={active ? 'scale-110' : 'scale-100 transition-transform'} />
-                  {it.badge > 0 && (
-                    <bdi className="absolute -top-0.5 left-1/2 flex h-4 min-w-4 -translate-x-2 items-center justify-center rounded-full bg-hot px-1 text-[9px] font-bold text-white tnum">{faNum(it.badge)}</bdi>
-                  )}
-                </span>
-                <span className={`text-[10px] font-semibold ${active ? 'text-brand-2' : ''}`}>{it.label}</span>
-              </Comp>
-            )
-          })}
-        </div>
+      <nav ref={barRef} className="gn-bar" aria-label="ناوبری اصلی">
+        <i ref={glassRef} className="gn-gl gn-glass" aria-hidden="true" />
+        <i ref={haloRef} className="gn-halo" aria-hidden="true" />
+        <i ref={pillRef} className="gn-gl gn-pill" aria-hidden="true" />
+        {items.map((it, i) => {
+          const Ic = it.icon
+          return (
+            <button
+              key={it.id}
+              ref={(el) => { itemRefs.current[i] = el }}
+              type="button"
+              className="gn-it"
+              aria-current={activeIdx === i}
+              aria-label={it.label}
+              onClick={(e) => { if (e.detail === 0) api.current.kb?.(i) }}
+            >
+              <Ic size={25} strokeWidth={1.8} />
+              <span>{it.label}</span>
+              {it.badge > 0 && <bdi className="gn-bd">{faNum(it.badge)}</bdi>}
+            </button>
+          )
+        })}
+        <button ref={mvRef} type="button" className="gn-hd gn-mv" aria-label="جابه‌جایی ناوبری">
+          <Move size={20} strokeWidth={2} />
+        </button>
+        <button ref={rtRef} type="button" className="gn-hd gn-rt" aria-label="چرخاندن ناوبری (دوبار کلیک: صفر)" onDoubleClick={() => api.current.zeroRot?.()}>
+          <RotateCw size={20} strokeWidth={2} />
+        </button>
       </nav>
 
       {/* کشوی دسته‌ها */}
       {drawer && (
-        <div className="fixed inset-0 z-50 md:hidden" role="dialog" aria-modal="true">
+        <div className="fixed inset-0 z-50" role="dialog" aria-modal="true">
           <button aria-label="بستن" className="absolute inset-0 bg-black/60 fade-in" onClick={() => setDrawer(false)} />
           <div className="glass absolute inset-x-0 bottom-0 max-h-[80vh] overflow-y-auto rounded-t-3xl p-5 pop-in safe-bottom">
             <div className="mb-4 flex items-center justify-between">
@@ -399,7 +644,35 @@ export function MobileNav() {
           </div>
         </div>
       )}
+    </>
+  )
+}
 
+/* ------------------------------ جستجوی موبایل ------------------------------ */
+function MobileSearch({ open, onClose }) {
+  if (!open) return null
+  return (
+    <div className="fixed inset-0 z-50 bg-base">
+      <div className="container-x flex items-center gap-3 pt-4">
+        <div className="flex-1"><SearchBox autoFocus onNavigate={onClose} mobile /></div>
+        <button onClick={onClose} aria-label="بستن جستجو" className="btn btn-ghost h-10 w-10 p-0"><X size={18} /></button>
+      </div>
+      <p className="container-x mt-6 text-xs text-mute">نتایج پیشنهادی حین تایپ نمایش داده می‌شود.</p>
+    </div>
+  )
+}
+
+/* ------------------------------ ناوبری موبایل ------------------------------ */
+export function MobileNav() {
+  const { cart, wishlist } = useStore()
+  const [search, setSearch] = useState(false)
+  const loc = useLocation()
+  const cartCount = cart.reduce((s, i) => s + i.qty, 0)
+
+
+
+  return (
+    <>
       <MobileSearch open={search} onClose={() => setSearch(false)} />
 
       {/* هدر موبایل: لوگو + پیل جستجو + سبد */}
@@ -466,7 +739,7 @@ export function Footer() {
   ]
 
   return (
-    <footer className="mt-16 border-t border-line bg-deep pb-28 md:pb-10">
+    <footer className="mt-16 border-t border-line bg-deep pb-36 md:pb-28">
       <div className="container-x pt-10">
         {/* نوار خدمات */}
         <div className="grid grid-cols-2 gap-6 border-b border-line pb-9 sm:grid-cols-3 md:grid-cols-5">
