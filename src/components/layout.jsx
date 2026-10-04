@@ -377,65 +377,6 @@ function gnLighten(el, M, cx, cy, th, W, H) {
   st.setProperty('--rg', gnConic(A.prof, (A.dom * 180) / Math.PI + 90))
 }
 
-/* ------------------------------ بافت رویه‌ای منظره برای شکست نور ------------------------------ */
-function gnNature() {
-  let s = 7
-  const r = () => { s = (s * 16807) % 2147483647; return (s - 1) / 2147483646 }
-  const Y = 650, N = 129
-  let i, j, x, y, w, g = '', t = '', o
-  function ridge(b, a, h) {
-    let p = [b + (r() - .5) * a, b + (r() - .5) * a], d = a, q
-    while (p.length < N) {
-      q = []
-      for (j = 0; j < p.length - 1; j++) q.push(p[j], (p[j] + p[j + 1]) / 2 + (r() - .5) * d)
-      q.push(p[p.length - 1]); p = q; d *= h
-    }
-    return 'M0 ' + Y + p.map((v, k) => 'L' + k * 12.5 + ' ' + Math.min(v, Y - 4).toFixed(0)).join('') + 'L1600 ' + Y + 'Z'
-  }
-  function tree(x0, y0, h) {
-    const w0 = h * .42
-    let u = ''
-    for (let k = 0; k < 4; k++) {
-      const ww = w0 * (.5 + k * .17), yy = y0 - h + k * h * .22
-      u += 'M' + x0.toFixed(0) + ' ' + yy.toFixed(0) + 'l' + (ww / 2).toFixed(0) + ' ' + (h * .36).toFixed(0) + 'h' + (-ww).toFixed(0) + 'z'
-    }
-    return u
-  }
-  const C = ['#e0aaa0', '#b78fa8', '#7d7fa6', '#4d6288', '#2c4160']
-  const B = [360, 430, 500, 570, 620]
-  const A = [260, 230, 190, 140, 90]
-  for (i = 0; i < 5; i++) {
-    g += '<path d="' + ridge(B[i], A[i], .56) + '" fill="' + C[i] + '"/>'
-    if (i < 4) g += '<rect y="' + (B[i] + 10) + '" width="1600" height="140" fill="url(#m)"/>'
-  }
-  o = '<svg xmlns="http://www.w3.org/2000/svg" width="2000" height="1125" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice"><defs>'
-    + '<linearGradient id="s" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#10264a"/><stop offset=".45" stop-color="#5a6fa3"/><stop offset=".72" stop-color="#f2b08a"/><stop offset="1" stop-color="#ffd9a8"/></linearGradient>'
-    + '<radialGradient id="h"><stop offset="0" stop-color="#fff1c4" stop-opacity=".95"/><stop offset=".25" stop-color="#ffc98a" stop-opacity=".55"/><stop offset="1" stop-color="#ff9a6a" stop-opacity="0"/></radialGradient>'
-    + '<linearGradient id="m" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffd9bd" stop-opacity="0"/><stop offset=".5" stop-color="#ffd9bd" stop-opacity=".42"/><stop offset="1" stop-color="#ffd9bd" stop-opacity="0"/></linearGradient>'
-    + '<linearGradient id="l" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e9a98a"/><stop offset=".35" stop-color="#4c6f93"/><stop offset="1" stop-color="#0c2538"/></linearGradient>'
-    + '<clipPath id="c"><rect y="' + Y + '" width="1600" height="250"/></clipPath><filter id="b"><feGaussianBlur stdDeviation="3 9"/></filter>'
-    + '<filter id="n"><feTurbulence baseFrequency=".85" numOctaves="2" seed="4"/><feColorMatrix values="0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 .4 0 0 0 -.12"/></filter></defs>'
-    + '<rect width="1600" height="900" fill="url(#s)"/><circle cx="1010" cy="400" r="560" fill="url(#h)"/><circle cx="1010" cy="400" r="46" fill="#fff4d2"/>'
-  for (i = 0; i < 7; i++) {
-    x = 300 + r() * 1000; y = 110 + r() * 220; w = 10 + r() * 16
-    o += '<path d="M' + x.toFixed(0) + ' ' + y.toFixed(0) + 'q' + w / 2 + ' ' + -w / 2 + ' ' + w + ' 0q' + w / 2 + ' ' + -w / 2 + ' ' + w + ' 0" fill="none" stroke="#1a2236" stroke-width="2.4" stroke-linecap="round"/>'
-  }
-  o += '<g id="g">' + g + '</g><rect y="' + Y + '" width="1600" height="250" fill="url(#l)"/>'
-    + '<g clip-path="url(#c)" opacity=".5" filter="url(#b)"><use href="#g" transform="translate(0,' + 2 * Y + ') scale(1 -1)"/></g>'
-    + '<ellipse cx="1010" cy="' + (Y + 90) + '" rx="38" ry="110" fill="#ffe7b8" opacity=".5" filter="url(#b)"/>'
-  for (i = 0; i < 16; i++) o += '<path d="M' + (r() * 1500).toFixed(0) + ' ' + (Y + 20 + r() * 220).toFixed(0) + 'h' + (40 + r() * 140).toFixed(0) + '" stroke="#fff" stroke-opacity=".14" stroke-width="2"/>'
-  for (i = 0; i < 46; i++) {
-    x = 1010 + (r() - .5) * (60 + i / 46 * 280); y = Y + 16 + i / 46 * 210 + r() * 10; w = 10 + r() * 46 * (1 + i / 46)
-    o += '<path d="M' + x.toFixed(0) + ' ' + y.toFixed(0) + 'h' + w.toFixed(0) + '" stroke="#fff4d6" stroke-opacity="' + (.35 + r() * .45).toFixed(2) + '" stroke-width="' + (2 + r() * 2.5).toFixed(1) + '" stroke-linecap="round"/>'
-  }
-  for (i = 0; i < 9; i++) {
-    t += tree(20 + i * 52 + r() * 30, 820 + r() * 40, 150 + r() * 190 * (1 - i / 12))
-    t += tree(1580 - i * 52 - r() * 30, 810 + r() * 40, 150 + r() * 190 * (1 - i / 12))
-  }
-  o += '<path fill="#06161f" d="M0 900V790Q200 740 420 830Q520 870 560 900ZM1600 900V770Q1380 730 1180 820Q1090 865 1040 900Z' + t + '"/><rect width="1600" height="900" filter="url(#n)"/></svg>'
-  return o
-}
-
 /* ------------------------------ ناوبر شیشه‌ای شناور ------------------------------ */
 export function FloatingNav() {
   const { cart, wishlist } = useStore()
@@ -541,64 +482,73 @@ export function FloatingNav() {
           wake()
         }
 
-        /* عکس‌برداری زنده از خود صفحه برای شکست نور پشت شیشه */
-        let capTimer = 0, lastCap = 0, pendingCap = false, fails = 0
+        /* عکس‌برداری زنده از خود صفحه برای شکست نور پشت شیشه (با موتور رندر خود مرورگر) */
+        let capTimer = 0, cropTimer = 0, lastFull = 0, lastCrop = 0, fails = 0
+        let fullCnv = null, fullScale = 1
+
+        function cropUpload() {
+          if (disposed || !gl || !fullCnv) return
+          const vw = window.innerWidth, vh = window.innerHeight
+          const ow = Math.max(1, Math.round(vw * fullScale))
+          const oh = Math.max(1, Math.round(vh * fullScale))
+          const sy = Math.max(0, Math.min(window.scrollY * fullScale, fullCnv.height - oh))
+          const out = document.createElement('canvas')
+          out.width = ow; out.height = oh
+          out.getContext('2d').drawImage(fullCnv, 0, sy, ow, oh, 0, 0, ow, oh)
+          TW = ow; TH = oh; pgMode = true
+          uploadSource(out)
+        }
+
+        async function snapFull() {
+          const { toCanvas } = await import('html-to-image')
+          if (disposed || !gl) return
+          const vw = window.innerWidth, vh = window.innerHeight
+          fullScale = Math.min(0.6, 1500 / Math.max(vw, vh))
+          const docH = Math.min(document.body.scrollHeight, window.scrollY + vh * 2 + 300)
+          fullCnv = await toCanvas(document.body, {
+            width: vw, height: docH, pixelRatio: fullScale,
+            backgroundColor: '#0a0c12',
+            filter: (node) => !(node === bar || node === cv || (node.classList && (node.classList.contains('gn-bar') || node.classList.contains('gn-cv'))))
+          })
+          if (disposed || !gl) return
+          cropUpload()
+        }
+
         function capture(delay = 0) {
           if (disposed || !gl) return
           clearTimeout(capTimer)
           capTimer = setTimeout(async () => {
             if (disposed || !gl) return
-            const now = performance.now()
-            if (now - lastCap < 300) {
-              if (!pendingCap) { pendingCap = true; setTimeout(() => { pendingCap = false; capture(0) }, 320) }
-              return
-            }
-            lastCap = now
-            try {
-              const html2canvas = (await import('html2canvas')).default
-              if (disposed || !gl) return
-              const vw = window.innerWidth, vh = window.innerHeight
-              const cnv = await html2canvas(document.body, {
-                x: 0, y: window.scrollY, width: vw, height: vh,
-                windowWidth: vw, windowHeight: vh,
-                scale: Math.min(0.55, 1500 / Math.max(vw, vh)),
-                backgroundColor: '#0a0c12', logging: false,
-                ignoreElements: (el) => el === cv || el === bar || (el.classList && (el.classList.contains('gn-cv') || el.classList.contains('gn-bar')))
-              })
-              if (disposed || !gl) return
-              TW = cnv.width; TH = cnv.height; pgMode = true
-              uploadSource(cnv)
-              fails = 0
-            } catch {
+            lastFull = performance.now()
+            try { await snapFull(); fails = 0 }
+            catch {
               fails++
-              if (fails === 2) loadNatureFallback()
+              if (fails === 2) document.documentElement.classList.add('gn-nogl')
             }
           }, delay)
         }
-        api.current.capture = capture
-
-        function loadNatureFallback() {
-          const im = new Image()
-          im.onload = () => {
-            if (disposed || !gl) return
-            const c = document.createElement('canvas')
-            const k = Math.min(1, 2048 / Math.max(im.width, im.height))
-            TW = c.width = Math.round(im.width * k)
-            TH = c.height = Math.round(im.height * k)
-            c.getContext('2d').drawImage(im, 0, 0, TW, TH)
-            pgMode = false
-            uploadSource(c)
+        function captureScroll() {
+          if (disposed || !gl) return
+          if (!fullCnv) { capture(150); return }
+          if (performance.now() - lastFull > 900) { capture(120); return }
+          const now = performance.now()
+          if (now - lastCrop < 120) {
+            clearTimeout(cropTimer)
+            cropTimer = setTimeout(cropUpload, 130)
+            return
           }
-          im.src = 'data:image/svg+xml,' + encodeURIComponent(gnNature())
+          lastCrop = now
+          cropUpload()
         }
+        api.current.capture = capture
 
         capture(350)
         const onWinLoad = () => capture(900)
-        const onScrollCap = () => capture(120)
+        const onScrollCap = () => captureScroll()
         window.addEventListener('load', onWinLoad)
         window.addEventListener('scroll', onScrollCap, { passive: true })
         api.current.glCleanup = () => {
-          clearTimeout(capTimer)
+          clearTimeout(capTimer); clearTimeout(cropTimer)
           window.removeEventListener('load', onWinLoad)
           window.removeEventListener('scroll', onScrollCap)
         }
