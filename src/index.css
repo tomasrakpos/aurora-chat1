@@ -225,7 +225,7 @@ body {
   background:
     radial-gradient(circle at calc(50% - var(--cos) * 50%) calc(50% - var(--sin) * 50%), rgba(255,255,255,.2) 0%, transparent 60%),
     color-mix(in srgb, white 18%, transparent);
-  backdrop-filter: blur(14px) saturate(170%); -webkit-backdrop-filter: blur(14px) saturate(170%);
+  backdrop-filter: blur(2px) saturate(180%) brightness(1.05); -webkit-backdrop-filter: blur(2px) saturate(180%) brightness(1.05);
   box-shadow:
     inset 0 0 0 1px color-mix(in srgb, white calc(var(--rim) * 20%), transparent),
     inset calc(var(--cos) * 1.8px) calc(var(--sin) * 3px) 0 -2px color-mix(in srgb, white calc(var(--rim) * 90%), transparent),
@@ -284,3 +284,9 @@ body {
 .gn-hd:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
 .gn-mv { left: calc(50% - 46px); }
 .gn-rt { left: calc(50% + 6px); }
+.gn-nogl .gn-gl { backdrop-filter: blur(14px) saturate(170%); -webkit-backdrop-filter: blur(14px) saturate(170%); }
+.gn-cv {
+  position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 43;
+  opacity: 0; transition: opacity .5s;
+}
+.gn-cv.on { opacity: 1; }

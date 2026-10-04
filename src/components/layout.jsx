@@ -377,6 +377,65 @@ function gnLighten(el, M, cx, cy, th, W, H) {
   st.setProperty('--rg', gnConic(A.prof, (A.dom * 180) / Math.PI + 90))
 }
 
+/* ------------------------------ بافت رویه‌ای منظره برای شکست نور ------------------------------ */
+function gnNature() {
+  let s = 7
+  const r = () => { s = (s * 16807) % 2147483647; return (s - 1) / 2147483646 }
+  const Y = 650, N = 129
+  let i, j, x, y, w, g = '', t = '', o
+  function ridge(b, a, h) {
+    let p = [b + (r() - .5) * a, b + (r() - .5) * a], d = a, q
+    while (p.length < N) {
+      q = []
+      for (j = 0; j < p.length - 1; j++) q.push(p[j], (p[j] + p[j + 1]) / 2 + (r() - .5) * d)
+      q.push(p[p.length - 1]); p = q; d *= h
+    }
+    return 'M0 ' + Y + p.map((v, k) => 'L' + k * 12.5 + ' ' + Math.min(v, Y - 4).toFixed(0)).join('') + 'L1600 ' + Y + 'Z'
+  }
+  function tree(x0, y0, h) {
+    const w0 = h * .42
+    let u = ''
+    for (let k = 0; k < 4; k++) {
+      const ww = w0 * (.5 + k * .17), yy = y0 - h + k * h * .22
+      u += 'M' + x0.toFixed(0) + ' ' + yy.toFixed(0) + 'l' + (ww / 2).toFixed(0) + ' ' + (h * .36).toFixed(0) + 'h' + (-ww).toFixed(0) + 'z'
+    }
+    return u
+  }
+  const C = ['#e0aaa0', '#b78fa8', '#7d7fa6', '#4d6288', '#2c4160']
+  const B = [360, 430, 500, 570, 620]
+  const A = [260, 230, 190, 140, 90]
+  for (i = 0; i < 5; i++) {
+    g += '<path d="' + ridge(B[i], A[i], .56) + '" fill="' + C[i] + '"/>'
+    if (i < 4) g += '<rect y="' + (B[i] + 10) + '" width="1600" height="140" fill="url(#m)"/>'
+  }
+  o = '<svg xmlns="http://www.w3.org/2000/svg" width="2000" height="1125" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice"><defs>'
+    + '<linearGradient id="s" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#10264a"/><stop offset=".45" stop-color="#5a6fa3"/><stop offset=".72" stop-color="#f2b08a"/><stop offset="1" stop-color="#ffd9a8"/></linearGradient>'
+    + '<radialGradient id="h"><stop offset="0" stop-color="#fff1c4" stop-opacity=".95"/><stop offset=".25" stop-color="#ffc98a" stop-opacity=".55"/><stop offset="1" stop-color="#ff9a6a" stop-opacity="0"/></radialGradient>'
+    + '<linearGradient id="m" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffd9bd" stop-opacity="0"/><stop offset=".5" stop-color="#ffd9bd" stop-opacity=".42"/><stop offset="1" stop-color="#ffd9bd" stop-opacity="0"/></linearGradient>'
+    + '<linearGradient id="l" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e9a98a"/><stop offset=".35" stop-color="#4c6f93"/><stop offset="1" stop-color="#0c2538"/></linearGradient>'
+    + '<clipPath id="c"><rect y="' + Y + '" width="1600" height="250"/></clipPath><filter id="b"><feGaussianBlur stdDeviation="3 9"/></filter>'
+    + '<filter id="n"><feTurbulence baseFrequency=".85" numOctaves="2" seed="4"/><feColorMatrix values="0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 .4 0 0 0 -.12"/></filter></defs>'
+    + '<rect width="1600" height="900" fill="url(#s)"/><circle cx="1010" cy="400" r="560" fill="url(#h)"/><circle cx="1010" cy="400" r="46" fill="#fff4d2"/>'
+  for (i = 0; i < 7; i++) {
+    x = 300 + r() * 1000; y = 110 + r() * 220; w = 10 + r() * 16
+    o += '<path d="M' + x.toFixed(0) + ' ' + y.toFixed(0) + 'q' + w / 2 + ' ' + -w / 2 + ' ' + w + ' 0q' + w / 2 + ' ' + -w / 2 + ' ' + w + ' 0" fill="none" stroke="#1a2236" stroke-width="2.4" stroke-linecap="round"/>'
+  }
+  o += '<g id="g">' + g + '</g><rect y="' + Y + '" width="1600" height="250" fill="url(#l)"/>'
+    + '<g clip-path="url(#c)" opacity=".5" filter="url(#b)"><use href="#g" transform="translate(0,' + 2 * Y + ') scale(1 -1)"/></g>'
+    + '<ellipse cx="1010" cy="' + (Y + 90) + '" rx="38" ry="110" fill="#ffe7b8" opacity=".5" filter="url(#b)"/>'
+  for (i = 0; i < 16; i++) o += '<path d="M' + (r() * 1500).toFixed(0) + ' ' + (Y + 20 + r() * 220).toFixed(0) + 'h' + (40 + r() * 140).toFixed(0) + '" stroke="#fff" stroke-opacity=".14" stroke-width="2"/>'
+  for (i = 0; i < 46; i++) {
+    x = 1010 + (r() - .5) * (60 + i / 46 * 280); y = Y + 16 + i / 46 * 210 + r() * 10; w = 10 + r() * 46 * (1 + i / 46)
+    o += '<path d="M' + x.toFixed(0) + ' ' + y.toFixed(0) + 'h' + w.toFixed(0) + '" stroke="#fff4d6" stroke-opacity="' + (.35 + r() * .45).toFixed(2) + '" stroke-width="' + (2 + r() * 2.5).toFixed(1) + '" stroke-linecap="round"/>'
+  }
+  for (i = 0; i < 9; i++) {
+    t += tree(20 + i * 52 + r() * 30, 820 + r() * 40, 150 + r() * 190 * (1 - i / 12))
+    t += tree(1580 - i * 52 - r() * 30, 810 + r() * 40, 150 + r() * 190 * (1 - i / 12))
+  }
+  o += '<path fill="#06161f" d="M0 900V790Q200 740 420 830Q520 870 560 900ZM1600 900V770Q1380 730 1180 820Q1090 865 1040 900Z' + t + '"/><rect width="1600" height="900" filter="url(#n)"/></svg>'
+  return o
+}
+
 /* ------------------------------ ناوبر شیشه‌ای شناور ------------------------------ */
 export function FloatingNav() {
   const { cart, wishlist } = useStore()
@@ -401,7 +460,7 @@ export function FloatingNav() {
   useEffect(() => { setActiveIdx(matchIdx(loc.pathname)) }, [loc.pathname])
 
   const barRef = useRef(null), glassRef = useRef(null), pillRef = useRef(null), haloRef = useRef(null)
-  const mvRef = useRef(null), rtRef = useRef(null)
+  const mvRef = useRef(null), rtRef = useRef(null), cvRef = useRef(null)
   const itemRefs = useRef([])
   const api = useRef({})
   const activeIdxRef = useRef(activeIdx)
@@ -427,6 +486,81 @@ export function FloatingNav() {
     let slot = [], lo = 0, hi = 0, idx = 0, tgtC = 0
     let drag = false, mode = null, first = true, run = false, last = 0, rz = 0
     let ox = 0, oy = 0, la = 0, rafId = 0, tintId = 0, t0 = performance.now()
+    let disposed = false
+
+    /* ---------- WebGL: شکست نور پشت شیشه ---------- */
+    const cv = cvRef.current
+    let gl = null, G = false
+    const U = {}
+    let TW = 2000, TH = 1125
+    const dpr = Math.min(window.devicePixelRatio || 1, 2)
+    const VS = 'attribute vec2 p;void main(){gl_Position=vec4(p,0.,1.);}'
+    const FS = 'precision highp float;uniform sampler2D u_t;uniform vec2 u_res,u_img,u_off,u_barC,u_barS,u_pillC,u_pillS;uniform float u_dpr,u_ang,u_scale,u_pg;'
+      + 'vec2 lens(vec2 p,vec2 c,vec2 sz,out float ins){vec2 d=p-c;float ca=cos(u_ang),sa=sin(u_ang);vec2 l=vec2(ca*d.x+sa*d.y,-sa*d.x+ca*d.y);'
+      + 'float R=min(sz.x,sz.y)*.5,hx=max(sz.x*.5-R,0.);vec2 q=vec2(l.x-clamp(l.x,-hx,hx),l.y)/R;float qq=length(q);ins=step(qq,1.);'
+      + 'float m=sin(exp2(2.8*log2(max(qq,1e-4)))*3.14159265);vec2 v=-q*m;return vec2(ca*v.x-sa*v.y,sa*v.x+ca*v.y)*ins;}'
+      + 'vec3 smp(vec2 p){return texture2D(u_t,(p-u_off)/u_img).rgb;}'
+      + 'void main(){vec2 p=vec2(gl_FragCoord.x,u_res.y-gl_FragCoord.y)/u_dpr;float a,b;vec2 v1=lens(p,u_barC,u_barS,a);vec2 v2=lens(p,u_pillC,u_pillS,b);'
+      + 'if(a+b<.5){discard;}'
+      + 'vec2 v=mix(v1,v2*(1.+u_pg),b)*u_scale*.5;float ds=mix(.05,.12,b);gl_FragColor=vec4(smp(p+v*(1.+ds)).r,smp(p+v).g,smp(p+v*(1.-ds)).b,1.);}'
+
+    function sh(type, src) { const o = gl.createShader(type); gl.shaderSource(o, src); gl.compileShader(o); return o }
+    if (cv) {
+      try {
+        gl = cv.getContext('webgl', { alpha: true, antialias: false }) || cv.getContext('experimental-webgl', { alpha: true, antialias: false })
+      } catch { gl = null }
+    }
+    if (gl) {
+      const pr = gl.createProgram()
+      gl.attachShader(pr, sh(gl.VERTEX_SHADER, VS))
+      gl.attachShader(pr, sh(gl.FRAGMENT_SHADER, FS))
+      gl.linkProgram(pr)
+      if (!gl.getProgramParameter(pr, gl.LINK_STATUS)) gl = null
+      else {
+        gl.useProgram(pr)
+        gl.clearColor(0, 0, 0, 0)
+        gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer())
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]), gl.STATIC_DRAW)
+        const al = gl.getAttribLocation(pr, 'p')
+        gl.enableVertexAttribArray(al)
+        gl.vertexAttribPointer(al, 2, gl.FLOAT, false, 0, 0)
+        ;['t', 'res', 'img', 'off', 'barC', 'barS', 'pillC', 'pillS', 'dpr', 'ang', 'scale', 'pg'].forEach((n) => { U[n] = gl.getUniformLocation(pr, 'u_' + n) })
+        gl.uniform1i(U.t, 0)
+        const tex = gl.createTexture()
+        const im = new Image()
+        im.onload = () => {
+          if (disposed || !gl) return
+          const c = document.createElement('canvas')
+          const k = Math.min(1, 2048 / Math.max(im.width, im.height))
+          TW = c.width = Math.round(im.width * k)
+          TH = c.height = Math.round(im.height * k)
+          c.getContext('2d').drawImage(im, 0, 0, TW, TH)
+          gl.bindTexture(gl.TEXTURE_2D, tex)
+          gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, c)
+          ;[[gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE], [gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE], [gl.TEXTURE_MIN_FILTER, gl.LINEAR], [gl.TEXTURE_MAG_FILTER, gl.LINEAR]]
+            .forEach((q) => gl.texParameteri(gl.TEXTURE_2D, q[0], q[1]))
+          G = true
+          sizeCanvas()
+          setStatic()
+          cv.classList.add('on')
+          wake()
+        }
+        im.src = 'data:image/svg+xml,' + encodeURIComponent(gnNature())
+      }
+    }
+    if (!gl) document.documentElement.classList.add('gn-nogl')
+
+    function sizeCanvas() { if (cv) { cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr) } }
+    function setStatic() {
+      if (!gl || !G) return
+      const sc = Math.max(W / TW, H / TH), iw = TW * sc, ih = TH * sc
+      gl.viewport(0, 0, cv.width, cv.height)
+      gl.uniform2f(U.res, cv.width, cv.height)
+      gl.uniform1f(U.dpr, dpr)
+      gl.uniform2f(U.img, iw, ih)
+      gl.uniform2f(U.off, (W - iw) * 0.62, (H - ih) * 0.5)
+      gl.uniform1f(U.scale, 44)
+    }
 
     function physics() {
       S.vx = (S.vx + (S.tcx - S.cx) * 0.14) * 0.74; S.cx += S.vx
@@ -478,6 +612,16 @@ export function FloatingNav() {
       hh.setProperty('--g', gg)
       gnLighten(glass, MB, S.cx, S.cy, S.th, W, H)
       gnLighten(pill, MP, px, py, S.th, W, H)
+      if (G) {
+        gl.uniform2f(U.barC, S.cx, S.cy)
+        gl.uniform2f(U.barS, BW, BH)
+        gl.uniform2f(U.pillC, px, py)
+        gl.uniform2f(U.pillS, w, h)
+        gl.uniform1f(U.ang, S.th)
+        gl.uniform1f(U.pg, 0.3 * Gl.g)
+        gl.clear(gl.COLOR_BUFFER_BIT)
+        gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4)
+      }
     }
 
     function loop(t) {
@@ -511,6 +655,8 @@ export function FloatingNav() {
       }
       tgtC = slot[idx] ?? tgtC
       P.xL = tgtC - PW / 2; P.xR = tgtC + PW / 2; P.vL = P.vR = 0
+      sizeCanvas()
+      if (G) setStatic()
       render()
     }
 
@@ -568,6 +714,7 @@ export function FloatingNav() {
     tintId = requestAnimationFrame(tint)
 
     return () => {
+      disposed = true
       cancelAnimationFrame(rafId); cancelAnimationFrame(tintId); clearTimeout(rz)
       bar.removeEventListener('pointerdown', onBarDown)
       bar.removeEventListener('pointermove', onBarMove)
@@ -587,6 +734,7 @@ export function FloatingNav() {
 
   return (
     <>
+      <canvas ref={cvRef} className="gn-cv" aria-hidden="true" />
       <nav ref={barRef} className="gn-bar" aria-label="ناوبری اصلی">
         <i ref={glassRef} className="gn-gl gn-glass" aria-hidden="true" />
         <i ref={haloRef} className="gn-halo" aria-hidden="true" />
