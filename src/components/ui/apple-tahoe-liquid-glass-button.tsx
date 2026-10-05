@@ -1,7 +1,10 @@
 "use client";
 
 import * as React from "react";
-import { cn } from "@/lib/utils";
+
+// React + Tailwind CSS. Wrap your button in <LiquidGlassViewport bgImage="/your-image.jpg">.
+// Use <LiquidGlassButton>Label</LiquidGlassButton> inside the viewport.
+const cn = (...values: Array<string | undefined | false>) => values.filter(Boolean).join(" ");
 
 // --- Types & Interfaces ---
 export interface LiquidGlassViewportProps extends React.HTMLAttributes<HTMLDivElement> {
@@ -118,8 +121,8 @@ export const LiquidGlassViewport = React.forwardRef<HTMLDivElement, LiquidGlassV
       for (let y = 0; y < height; y += step) {
         for (let x = 0; x < width; x += step) {
           const i = (y * width + x) * 4;
-          const bx = (data[i] - 128) / 127;
-          const by = (data[i + 1] - 128) / 127;
+          const bx = ((data[i] ?? 128) - 128) / 127;
+          const by = ((data[i + 1] ?? 128) - 128) / 127;
           const mag = Math.hypot(bx, by);
           if (mag < 0.02) continue;
 
@@ -158,7 +161,7 @@ export const LiquidGlassViewport = React.forwardRef<HTMLDivElement, LiquidGlassV
       const stops: string[] = [];
       for (let b = 0; b <= BINS; b++) {
         const idx = b % BINS;
-        const t = profile[idx];
+        const t = profile[idx] ?? 0;
         const deg = (b / BINS) * 360;
         const op = (0.07 + t * 0.63).toFixed(3);
         stops.push(`rgba(255,255,255,${op}) ${deg.toFixed(1)}deg`);
@@ -168,7 +171,7 @@ export const LiquidGlassViewport = React.forwardRef<HTMLDivElement, LiquidGlassV
 
     const initWebGL = React.useCallback((canvas: HTMLCanvasElement) => {
       try {
-        const gl = canvas.getContext("webgl") || canvas.getContext("experimental-webgl");
+        const gl = canvas.getContext("webgl");
         if (!gl) return false;
 
         const vs = `attribute vec2 p; varying vec2 uv; void main() { uv = p * 0.5 + 0.5; gl_Position = vec4(p, 0.0, 1.0); }`;
@@ -199,8 +202,11 @@ export const LiquidGlassViewport = React.forwardRef<HTMLDivElement, LiquidGlassV
         };
         const prog = gl.createProgram();
         if (!prog) return false;
-        gl.attachShader(prog, sh(gl.VERTEX_SHADER, vs));
-        gl.attachShader(prog, sh(gl.FRAGMENT_SHADER, fs));
+        const vertexShader = sh(gl.VERTEX_SHADER, vs);
+        const fragmentShader = sh(gl.FRAGMENT_SHADER, fs);
+        if (!vertexShader || !fragmentShader) return false;
+        gl.attachShader(prog, vertexShader);
+        gl.attachShader(prog, fragmentShader);
         gl.linkProgram(prog);
         gl.useProgram(prog);
 
@@ -311,6 +317,10 @@ export const LiquidGlassViewport = React.forwardRef<HTMLDivElement, LiquidGlassV
         }
 
         const btn = buttons[0];
+        if (!btn) {
+          animationFrameId = requestAnimationFrame(loop);
+          return;
+        }
         const rect = btn.getBoundingClientRect();
         const pRect = container.getBoundingClientRect();
 
@@ -364,15 +374,15 @@ export const LiquidGlassViewport = React.forwardRef<HTMLDivElement, LiquidGlassV
           if (gl && prog) {
             gl.viewport(0, 0, canvas.width, canvas.height);
             gl.useProgram(prog);
-            gl.uniform1i(glLocRef.current.bg, 0);
-            gl.uniform1i(glLocRef.current.disp, 1);
-            gl.uniform2f(glLocRef.current.res, canvas.width, canvas.height);
+            gl.uniform1i(glLocRef.current['bg'] ?? null, 0);
+            gl.uniform1i(glLocRef.current['disp'] ?? null, 1);
+            gl.uniform2f(glLocRef.current['res'] ?? null, canvas.width, canvas.height);
 
             const localLeft = rect.left - pRect.left;
             const localTop = rect.top - pRect.top;
 
-            gl.uniform4f(glLocRef.current.rect, localLeft, localTop, rect.width, rect.height);
-            gl.uniform1f(glLocRef.current.scale, DISP_SCALE);
+            gl.uniform4f(glLocRef.current['rect'] ?? null, localLeft, localTop, rect.width, rect.height);
+            gl.uniform1f(glLocRef.current['scale'] ?? null, DISP_SCALE);
             gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
           }
         }
@@ -428,13 +438,13 @@ export const LiquidGlassViewport = React.forwardRef<HTMLDivElement, LiquidGlassV
           <svg className="absolute w-0 h-0 overflow-hidden pointer-events-none" xmlns="http://www.w3.org/2000/svg">
             <defs>
               <filter id={filterId0} x="0" y="0" width="100%" height="100%" filterUnits="userSpaceOnUse" primitiveUnits="userSpaceOnUse" colorInterpolationFilters="sRGB">
-                <feImage ref={feImage0Ref} href="" x="0" y="0" width="200" height="80" result="lens" preserveAspectRatio="none" />
+                <feImage ref={feImage0Ref} x="0" y="0" width="200" height="80" result="lens" preserveAspectRatio="none" />
                 <feFlood floodColor="rgb(128,128,128)" result="neutral" />
                 <feComposite in="lens" in2="neutral" operator="over" result="dispMap" />
                 <feDisplacementMap in="SourceGraphic" in2="dispMap" scale={DISP_SCALE.toString()} xChannelSelector="R" yChannelSelector="G" />
               </filter>
               <filter id={filterId1} x="0" y="0" width="100%" height="100%" filterUnits="userSpaceOnUse" primitiveUnits="userSpaceOnUse" colorInterpolationFilters="sRGB">
-                <feImage ref={feImage1Ref} href="" x="0" y="0" width="200" height="80" result="lens" preserveAspectRatio="none" />
+                <feImage ref={feImage1Ref} x="0" y="0" width="200" height="80" result="lens" preserveAspectRatio="none" />
                 <feFlood floodColor="rgb(128,128,128)" result="neutral" />
                 <feComposite in="lens" in2="neutral" operator="over" result="dispMap" />
                 <feDisplacementMap in="SourceGraphic" in2="dispMap" scale={DISP_SCALE.toString()} xChannelSelector="R" yChannelSelector="G" />
@@ -493,7 +503,7 @@ export const LiquidGlassButton = React.forwardRef<HTMLButtonElement, LiquidGlass
           style={{
             background: renderMode === "webgl" ? "transparent" : "color-mix(in srgb, white 25%, transparent)",
             backdropFilter: renderMode === "webgl" ? "none" : "blur(2px) saturate(180%) brightness(1.05)",
-            WebkitBackdropFilter: renderMode === "webgl" ? "none" : "blur(2px) saturate(180%) brightness(1.05)",
+            WebkitBackdropFilter: renderMode === "webgl" ? "none" : "blur(1px) saturate(180%) brightness(1.05)",
             backgroundImage: renderMode === "webgl" ? "none" : "radial-gradient(circle at calc(50% - var(--cos) * 50%) calc(50% - var(--sin) * 50%), rgba(255,255,255,0.2) 0%, transparent 60%)",
             boxShadow: `
               inset 0 0 0 1px color-mix(in srgb, white calc(var(--rim-intensity) * 20%), transparent),
