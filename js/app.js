@@ -1,453 +1,90 @@
-// ==============================================================
-//  AURORA CHAT — app.js
-//  منطق کامل برنامه: احراز هویت، گفتگوها، پیام‌های Realtime
-//  ساختار جدول‌ها داخل schema.sql توضیح داده شده
-// ==============================================================
+function headerIcon(name){const paths={home:'<path d="m3 10.5 9-7.5 9 7.5V21h-6v-6H9v6H3z"/>',store:'<path d="M3 10v10h18V10M2 10l2-6h16l2 6M8 10v10m8-10v10M2 10a3 3 0 0 0 6 0 3 3 0 0 0 6 0 3 3 0 0 0 6 0"/>',grid:'<rect x="3.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.5"/>',game:'<path d="M6.5 8h11a4 4 0 0 1 3.8 2.8l1.1 3.7a2.5 2.5 0 0 1-4.2 2.5l-2.1-2H7.9l-2.1 2a2.5 2.5 0 0 1-4.2-2.5l1.1-3.7A4 4 0 0 1 6.5 8Z"/><path d="M7 10.5v4m-2-2h4m7-1h.01M18 14h.01"/>',console:'<path d="M6.5 8h11a4 4 0 0 1 3.8 2.8l1.1 3.7a2.5 2.5 0 0 1-4.2 2.5l-2.1-2H7.9l-2.1 2a2.5 2.5 0 0 1-4.2-2.5l1.1-3.7A4 4 0 0 1 6.5 8Z"/><path d="M7 10.5v4m-2-2h4m7-1h.01M18 14h.01"/>',cpu:'<rect x="6" y="6" width="12" height="12" rx="2"/><rect x="9" y="9" width="6" height="6" rx="1"/><path d="M9 2v4m6-4v4M9 18v4m6-4v4M2 9h4m-4 6h4m12-6h4m-4 6h4"/>',headset:'<path d="M3 13v-1a9 9 0 0 1 18 0v1"/><rect x="3" y="12" width="4" height="8" rx="2"/><rect x="17" y="12" width="4" height="8" rx="2"/><path d="M21 18a4 4 0 0 1-4 4h-2"/>',gift:'<rect x="3" y="8" width="18" height="13" rx="2"/><path d="M12 8v13M3 12h18M12 8H7.5a2.5 2.5 0 1 1 2.2-3.7L12 8Zm0 0h4.5a2.5 2.5 0 1 0-2.2-3.7L12 8Z"/>',account:'<path d="M20 21a8 8 0 0 0-16 0"/><circle cx="12" cy="8" r="4"/>',discount:'<path d="M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0L3.4 13.4a2 2 0 0 1-.6-1.4V5a2 2 0 0 1 2-2h7a2 2 0 0 1 1.4.6l7.4 7a2 2 0 0 1 0 2.8Z"/><circle cx="8" cy="8" r="1.3"/><path d="m10 14 4-4"/><circle cx="14.5" cy="14.5" r=".8"/>',vr:'<path d="M3 10a3 3 0 0 1 3-3h12a3 3 0 0 1 3 3l-1.3 7a2 2 0 0 1-2 1.6h-1.2a3 3 0 0 1-2.3-1.1l-1.1-1.3h-2.2l-1.1 1.3a3 3 0 0 1-2.3 1.1H7.3a2 2 0 0 1-2-1.6L4 10Z"/><path d="M7 10h4m-2-2v4m6-2h.01m2 0h.01"/>',search:'<circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 4.5 4.5"/>',arrow:'<path d="M20 12H4m7-7-7 7 7 7"/>',heart:'<path d="M20.8 8.8c0 4.1-8.8 10-8.8 10s-8.8-5.9-8.8-10a4.8 4.8 0 0 1 8.8-2.7 4.8 4.8 0 0 1 8.8 2.7Z"/>',cart:'<path d="M3 4h2l2.1 10.2a2 2 0 0 0 2 1.6h8.8a2 2 0 0 0 1.9-1.4L22 8H6"/><circle cx="10" cy="20" r="1.35"/><circle cx="18" cy="20" r="1.35"/>',user:'<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>',orders:'<path d="M6 3h12v18l-2-1.5-4 1.5-4-1.5L6 21z"/><path d="M9 8h6m-6 4h6m-6 4h4"/>',logout:'<path d="M10 17l5-5-5-5m5 5H3"/><path d="M12 3h6a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-6"/>'};return `<svg class="header-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${paths[name]||paths.grid}</svg>`}
+function header(){return ''}
 
-import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-import { SUPABASE_URL, SUPABASE_ANON_KEY } from "./supabase-config.js";
+function themeToggleMarkup(){const dark=state.theme==='dark';return `<button type="button" class="header-theme-toggle theme-toggle ${dark?'theme-is-dark':''}" data-theme-toggle aria-label="${dark?'تغییر به تم روشن':'تغییر به تم تیره'}" aria-pressed="${dark}" title="${dark?'تم روشن':'تم تیره'}"><span class="theme-icon" aria-hidden="true"><i class="theme-icon-glow"></i><svg class="theme-sun" viewBox="0 0 25 25" fill="none" xmlns="http://www.w3.org/2000/svg"><circle class="solar-draw" pathLength="1" cx="12.5" cy="12.5" r="4.2"/><path class="solar-draw" pathLength="1" d="M12.5 1.8v2.1m0 17.2v2.1M1.8 12.5h2.1m17.2 0h2.1M4.94 4.94l1.48 1.48m12.16 12.16 1.48 1.48m0-15.12-1.48 1.48M6.42 18.58l-1.48 1.48"/></svg><svg class="theme-moon" viewBox="0 0 25 25" fill="none" xmlns="http://www.w3.org/2000/svg"><path class="solar-draw" pathLength="1" d="M21.19 13.2a9 9 0 0 1-17.75-1.14 9 9 0 0 1 8-8.65 7.4 7.4 0 0 0 9.75 9.79Z"/></svg></span></button>`}
+function footer(){return `<footer><div class="wrap footer-grid"><div><p>وِستا؛ فروشگاه بازی و اکانت دیجیتال.</p></div><div><b>خبرنامه‌ی وِستا</b><p>ایمیل خود را برای عضویت وارد کن.</p><form id="newsletter" class="newsletter"><input type="email" required placeholder="ایمیل شما"><button>عضویت</button></form></div></div><div class="wrap copyright">© ۱۴۰۵ وِستا. تمامی حقوق محفوظ است. <span>ساخته‌شده برای خرید بهتر ◇</span></div></footer>`}
+function shell(content){return `${header()}<main>${content}</main>${footer()}`}
+function categoryIcon(name){const paths={'کنسول‌ها':'<rect x="3" y="4" width="18" height="15" rx="2"/><path d="M8 21h8m-4-2v2"/>','بازی‌های فیزیکی':'<path d="M5 3h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Z"/><circle cx="12" cy="12" r="4"/><circle cx="12" cy="12" r="1"/>','اکانت دیجیتال':'<rect x="3" y="4" width="18" height="16" rx="2.5"/><circle cx="9" cy="10" r="2.5"/><path d="M5.5 17c.8-2 2-3 3.5-3s2.7 1 3.5 3m2-6h3m-3 3h3"/>','لوازم جانبی':'<path d="M4 13v-2a8 8 0 0 1 16 0v2"/><rect x="3" y="12" width="4" height="7" rx="2"/><rect x="17" y="12" width="4" height="7" rx="2"/>','سیستم گیمینگ':'<rect x="3" y="4" width="18" height="13" rx="2"/><path d="M8 21h8m-4-4v4"/>','واقعیت مجازی':'<path d="M3 10a3 3 0 0 1 3-3h12a3 3 0 0 1 3 3l-1.3 7a2 2 0 0 1-2 1.6h-1.2a3 3 0 0 1-2.3-1.1l-1.1-1.3h-2.2l-1.1 1.3a3 3 0 0 1-2.3 1.1H7.3a2 2 0 0 1-2-1.6L4 10Z"/><path d="M7 10h4m-2-2v4m6-2h.01m2 0h.01"/>','گیفت‌کارت و اشتراک':'<rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18m-9-4v13"/><path d="M9 6c-2.5 0-2.5-4 0-3 2 1 3 3 3 3m3 0c2.5 0 2.5-4 0-3-2 1-3 3-3 3"/>'};return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${paths[name]||paths['کنسول‌ها']}</svg>`}
+function categoryBlock(){const tiles=[['console','کنـسول‌های بـازی','PlayStation، Xbox و Nintendo','کنسول‌ها','/assets/cat-consoles.webp'],['games','بازی‌های فیزیـکی','نسخه‌های دیسکی بازی‌ها','بازی‌های فیزیکی','/assets/cat-games.webp'],['accounts','اکـانـت دیجیتال','کد و اکـانـت بازی','اکانت دیجیتال','/assets/cat-account.webp'],['gear','لـوازم جانبی','کنترلر، هدست و تجهیزات','لوازم جانبی','/assets/cat-controller.webp'],['vr','واقـعیت مجازی','هدست و تجهیزات VR','واقعیت مجازی','/assets/cat-vr.webp'],['pc','سیسـتم گیمینگ','PC، مانیتور و قطعات','سیستم گیمینگ','/assets/cat-pc.webp'],['gift','گیفـت‌کارت','اعتبار و اشتراک بازی','گیفت‌کارت و اشتراک','/assets/cat-gift.webp']];return `<section class="gaming-hub section"><div class="gaming-hub-heading"><div><div class="eyebrow">دسته‌بندی فروشگاه</div><h2>بازی و تجهیزات، یک‌جا</h2><p>دسته‌ی موردنظرت را انتخاب کن.</p></div><a href="/products" data-nav="/products" class="hub-all">همه‌ی دسته‌ها <span>←</span></a></div><div class="gaming-hub-grid">${tiles.map(([kind,title,sub,cat,image],index)=>`<a class="gaming-tile gaming-tile--${kind}" href="/category/${encodeURIComponent(cat)}" data-nav="/category/${encodeURIComponent(cat)}" aria-label="${title.replace(/ـ/g, '')}"><img class="gaming-tile-image" src="${image}" alt="" loading="lazy" decoding="async"><span class="gaming-tile-glow" aria-hidden="true"></span><span class="gaming-tile-copy"><small>${sub}</small><b>${title}</b><i>مشاهده‌ی دسته</i></span><span class="gaming-tile-index" aria-hidden="true">${String(index+1).padStart(2,'0')}</span></a>`).join('')}</div></section>`}
+function home(){return `<div class="wrap"><section class="game-hero" aria-label="بازی‌های ویژه"><div class="game-slides">
+<article class="game-slide is-active" data-slide="0" style="--art:url('/assets/fc-27-wide.jpg')"><img class="game-cover" src="/assets/fc-27-wide.jpg" alt="تصویر EA SPORTS FC 27" fetchpriority="high" decoding="async"><div class="game-copy"><span class="game-kicker"><i></i> اکـانـت بازی</span><p class="game-edition">EA SPORTS · FC 27</p><h1>اکـانـت بازی<br><em>FC 27</em></h1><p class="game-desc">اطلاعات و قیمت پس از بررسی درج می‌شود.</p><div class="game-price"><strong>قیمت به‌زودی</strong><span>بازی دیجیتال</span></div><div class="game-actions"><a class="game-buy product-glow-btn" href="/product/21" data-nav="/product/21">مشاهده‌ی بازی</a></div></div></article>
+<article class="game-slide" data-slide="1" style="--art:url('/assets/gta-6-wide.jpg')"><img class="game-cover" src="/assets/gta-6-wide.jpg" alt="تصویر Grand Theft Auto VI" loading="eager" fetchpriority="low" decoding="async"><div class="game-copy"><span class="game-kicker"><i></i> اکـانـت بازی</span><p class="game-edition">ROCKSTAR GAMES · GTA VI</p><h1>اکـانـت بازی<br><em>GTA VI</em></h1><p class="game-desc">اطلاعات و قیمت پس از بررسی درج می‌شود.</p><div class="game-price"><strong>قیمت به‌زودی</strong><span>بازی دیجیتال</span></div><div class="game-actions"><a class="game-buy product-glow-btn gta-preorder-rgb" href="/product/22" data-nav="/product/22">پیش‌خرید</a></div></div></article>
+</div><div class="slider-controls" role="group" aria-label="کنترل اسلایدهای بازی"><button class="slide-arrow" data-direction="prev" aria-label="اسلاید قبلی"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H5m7-7-7 7 7 7"/></svg></button><div class="slide-dots" role="group" aria-label="انتخاب اسلاید"><button class="slide-dot active" data-go-slide="0" aria-label="نمایش FC 27" aria-pressed="true"></button><button class="slide-dot" data-go-slide="1" aria-label="نمایش GTA VI" aria-pressed="false"></button></div><button class="slide-arrow" data-direction="next" aria-label="اسلاید بعدی"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14m-7-7 7 7-7 7"/></svg></button></div></section><section class="monitor-showcase section" aria-label="ویترین مانیتورهای گیمینگ"><div class="monitor-showcase-head"><div><div class="eyebrow">ویترین وِستا</div><h2>مانیتورهای گیمینگ</h2><p>قیمت‌ها در ۱۱ مهر ۱۴۰۵ از منابع آنلاین بررسی شده‌اند و ممکن است تغییر کنند.</p></div></div><div class="monitor-track" id="monitor-track" dir="rtl" tabindex="0" aria-label="پنج مانیتور؛ با کشیدن موس یا لمس افقی پیمایش کنید">${monitors.map((monitor,index)=>`<article class="monitor-card" data-model="monitor-${index+1}"><div class="monitor-image-wrap"><img src="${monitor.image}" alt="${monitor.name}" loading="lazy" fetchpriority="low" decoding="async"></div><div class="monitor-card-body"><h3 dir="ltr">${monitor.name}</h3><a class="monitor-price" href="${monitor.url}" target="_blank" rel="noopener noreferrer"><span><strong>${money(monitor.price)}</strong></span></a><a class="monitor-details product-glow-btn" href="/product/${index+1}" data-nav="/product/${index+1}">جزئیات محصول</a></div></article>`).join('')}</div></section><section class="monitor-showcase mouse-showcase section" aria-label="ویترین ماوس‌های گیمینگ"><div class="monitor-showcase-head"><div><h2>ماوس‌های گیمینگ</h2><p>قیمت‌ها در ۱۱ مهر ۱۴۰۵ از منابع آنلاین بررسی شده‌اند و ممکن است تغییر کنند.</p></div></div><div class="monitor-track mouse-track" id="mouse-track" dir="rtl" tabindex="0" aria-label="ماوس‌های گیمینگ؛ با کشیدن موس یا لمس افقی پیمایش کنید">${products.filter(product=>product.kind==='ماوس گیمینگ').map((mouse,index)=>`<article class="monitor-card mouse-card" data-model="mouse-${index+1}"><div class="monitor-image-wrap"><img src="${mouse.art||mouse.image_url||mouse.images?.[0]}" alt="${mouse.name}" loading="lazy" decoding="async"></div><div class="monitor-card-body"><h3 dir="ltr">${mouse.name}</h3><a class="monitor-price" href="${mouse.price_source_url||mouse.source_url}" target="_blank" rel="noopener noreferrer"><span><strong>${money(mouse.price)}</strong></span></a><a class="monitor-details mouse-details product-glow-btn" href="/product/${mouse.id}" data-nav="/product/${mouse.id}">جزئیات محصول</a></div></article>`).join('')}</div></section><section class="monitor-showcase keyboard-showcase section" aria-label="ویترین کیبوردهای گیمینگ"><div class="monitor-showcase-head"><div><h2>کیبوردهای گیمینگ</h2><p>قیمت و مشخصات از ترب؛ برای جزئیات هر محصول وارد صفحه‌ی آن شوید.</p></div></div><div class="monitor-track keyboard-track" id="keyboard-track" dir="rtl" tabindex="0" aria-label="کیبوردهای گیمینگ؛ با کشیدن موس یا لمس افقی پیمایش کنید">${products.filter(product=>product.kind==='کیبورد گیمینگ'&&product.id>=59&&product.id<=68).map((keyboard,index)=>`<article class="monitor-card keyboard-card" data-model="keyboard-${index+1}"><div class="monitor-image-wrap"><img src="${keyboard.art||keyboard.image_url||keyboard.images?.[0]}" alt="${keyboard.name}" loading="lazy" decoding="async"></div><div class="monitor-card-body"><h3 dir="ltr">${keyboard.name}</h3><a class="monitor-price" href="${keyboard.price_source_url||keyboard.source_url}" target="_blank" rel="noopener noreferrer"><span><strong>${money(keyboard.price)}</strong></span></a><a class="monitor-details product-glow-btn" href="/product/${keyboard.id}" data-nav="/product/${keyboard.id}">جزئیات محصول</a></div></article>`).join('')}</div></section>${categoryBlock()}<section class="section games-accounts-showcase"><div class="section-head"><div><div class="eyebrow">FC 27 و GTA VI</div><h2>بازی‌ها و اکـانـت‌ها</h2></div><a class="text-link" href="/products" data-nav="/products">همه‌ی بازی‌ها ←</a></div><div class="product-grid">${products.map(productCard).join('')}</div></section><section class="promo-grid"><a href="/category/PlayStation" data-nav="/category/PlayStation" class="promo promo-tech"><span>بازی‌های کنسولی</span><b>PlayStation و Xbox</b><i>انتخاب پلتفرم ←</i></a><a href="/category/اکانت%20بازی" data-nav="/category/اکانت%20بازی" class="promo promo-home"><span>بازی دیجیتال</span><b>اکانت بازی</b><i>مشاهده‌ی بازی‌ها ←</i></a></section><section class="section coming-soon"><div class="section-head"><div><div class="eyebrow">فهرست فروشگاه</div><h2>بازی‌های بیشتر</h2></div></div><p>محصولات و قیمت‌ها پس از بررسی اضافه می‌شوند.</p></section></div>`}
+function catalogMatchesCategory(p,category){if(!category||category==='بازی‌های جدید')return true;if(category==='اکانت دیجیتال'||category==='اکانت بازی')return p.kind==='اکانت بازی';if(category==='بازی‌های فیزیکی')return p.kind==='بازی';if(category==='کنسول‌ها')return p.kind==='کنسول بازی';if(category==='لوازم جانبی')return ['لوازم جانبی','موس Gaming','کیبورد Gaming','هدست Gaming','میکروفون Gaming','Mouse Pad','دسته بازی','تجهیزات Streaming','صندلی Gaming','Action Figure و Collectible'].includes(p.category);if(category==='واقعیت مجازی')return p.kind==='واقعیت مجازی';if(category==='سیستم گیمینگ')return p.platforms?.includes('PC');if(category==='گیفت‌کارت و اشتراک'||category==='گیفت‌کارت')return p.kind==='گیفت‌کارت'||p.kind==='اشتراک بازی';if(category==='اشتراک بازی')return p.kind==='اشتراک بازی';if(['PlayStation','Xbox','PC','Nintendo'].includes(category))return p.platforms?.includes(category);return p.category===category||p.cat===category}function catalog(title='همه‌ی بازی‌ها',category=''){let list=products.filter(p=>catalogMatchesCategory(p,category)&&(p.price==null?state.min===0&&state.max===1000000000:p.price>=state.min&&p.price<=state.max)&&(!state.query||`${p.name} ${p.brand} ${p.model} ${p.cat} ${p.category}`.toLocaleLowerCase().includes(state.query.toLocaleLowerCase())));if(state.sort==='cheap')list.sort((a,b)=>(a.price??Infinity)-(b.price??Infinity));if(state.sort==='expensive')list.sort((a,b)=>(b.price??-Infinity)-(a.price??-Infinity));if(state.sort==='sale')list=list.filter(p=>p.old);return `<div class="wrap catalog-page"><div class="breadcrumbs"><a href="/" data-nav="/">خانه</a>　/　${title}</div><div class="catalog-title"><div><div class="eyebrow">محصولات وِستا</div><h1>${title}</h1><p>${list.length} محصول</p></div><button class="filter-mobile" id="open-filter"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M7 12h10m-7 6h4"/></svg><span>فیلترها</span></button></div><div class="catalog-layout"><aside class="filters ${state.filterOpen?'filter-visible':''}" id="filters"><div class="filter-heading"><b>فیلتر محصولات</b><button id="close-filter">×</button></div><div class="filter-group"><b>دسته‌بندی</b>${cats.map(c=>`<label><input type="checkbox" data-cat="${c[0]}" ${category===c[0]?'checked':''}> ${c[0]}</label>`).join('')}</div><div class="filter-group"><b>محدوده قیمت</b><label class="price-filter">از <input id="min-price" type="number" value="${state.min||''}"></label><label class="price-filter">تا <input id="max-price" type="number" value="${state.max===1000000000?'':state.max}"></label><button class="apply-filter" id="apply-filter">اعمال قیمت</button></div><div class="filter-group"><b>ویژگی‌ها</b><label><input type="checkbox" id="discount-only" ${state.sort==='sale'?'checked':''}> فقط تخفیف‌دارها</label></div><button class="clear-filter" id="clear-filter">پاک کردن فیلترها</button></aside><div class="catalog-results"><div class="sortbar"><span>مرتب‌سازی:</span><button data-sort="default" class="${state.sort==='default'?'selected':''}">پیش‌فرض</button><button data-sort="cheap" class="${state.sort==='cheap'?'selected':''}">ارزان‌ترین</button><button data-sort="expensive" class="${state.sort==='expensive'?'selected':''}">گران‌ترین</button><button data-sort="sale" class="${state.sort==='sale'?'selected':''}">بیشترین تخفیف</button></div>${list.length?`<div class="product-grid">${list.map(productCard).join('')}</div>`:`<div class="empty-state"><span>⌕</span><h3>محصولی پیدا نشد</h3><p>عبارت دیگری را جستجو کن یا فیلترها را تغییر بده.</p><button class="primary-btn" id="reset-search">پاک کردن جستجو</button></div>`}</div></div></div>`}
+const products=await fetch('/data/products.json').then(response=>{if(!response.ok)throw new Error('Product catalog could not be loaded');return response.json()});
 
-const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const monitors=[
+{name:'ASUS ROG Strix OLED XG27ACDNG',image:'/assets/monitors/asus-xg27acdng.webp?v=2',spec:'۲۷ اینچ · QD-OLED · QHD · 360Hz',price:298800000,source:'TopRayan',url:'https://toprayan.com/product/62655/asus-rog-strix-oled-xg27acdng-27-inch-quad-hd-0.03ms-(gtg)-360hz-qd-oled-gaming-monitor',detailsUrl:'https://rog.asus.com/monitors/27-to-31-5-inches/rog-strix-oled-xg27acdng/'},
+{name:'ASUS TUF Gaming VG27AQ5A',image:'/assets/monitors/asus-vg27aq5a.webp?v=2',spec:'۲۷ اینچ · Fast IPS · QHD · 210Hz OC',price:64890000,source:'Torob',url:'https://torob.com/p/81fd42af-03ef-4725-b487-9f51474881af/مانیتور-گیمینگ-ایسوس-مدل-tuf-gaming-vg27aq5a-سایز-27-اینچ-qhd-210-هرتز/',detailsUrl:'https://www.asus.com/displays-desktops/monitors/tuf-gaming/tuf-gaming-vg27aq5a/'},
+{name:'ASUS ROG Swift OLED PG27UCDM',image:'/assets/monitors/asus-pg27ucdm.webp?v=2',spec:'۲۷ اینچ · QD-OLED · 4K · 240Hz',price:271999000,source:'Torob',url:'https://torob.com/p/064a8879-67d9-4e46-903f-6c880ef0d375/مانیتور-گیمینگ-ایسوس-rog-pg27ucdm-سایز-27-اینچ-oled-با-زمان-پاسخگویی-003-میلی-ثانیه/',detailsUrl:'https://rog.asus.com/monitors/27-to-31-5-inches/rog-swift-oled-pg27ucdm/'},
+{name:'MSI MAG 272PF X24',image:'/assets/monitors/msi-mag-272pf-x24.webp?v=2',spec:'۲۷ اینچ · Rapid IPS · Full HD · 240Hz',price:51000000,source:'Zoomit',url:'https://www.zoomit.ir/product/msi-mag-272pf-x24-fhd/',detailsUrl:'https://www.msi.com/Monitor/MAG-272PF-X24'},
+{name:'MSI G275L E14',image:'/assets/monitors/msi-g275l-e14.webp?v=2',spec:'۲۷ اینچ · IPS · Full HD · 144Hz',price:38000000,source:'Poromix',url:'https://www.poromix.com/product-5807/g275l-e14',detailsUrl:'https://www.msi.com/Monitor/G275L-E14'}
+];
+const cats=[['کنسول‌ها','console','#f8e9df'],['بازی‌های فیزیکی','disc','#efe9ff'],['اکانت دیجیتال','account','#fff0e5'],['لوازم جانبی','gear','#fff1e6'],['سیستم گیمینگ','pc','#e8f1ff'],['واقعیت مجازی','vr','#e6f6ff'],['گیفت‌کارت و اشتراک','gift','#f8efe8']];
+const money=n=>n==null?'قیمت به‌زودی':new Intl.NumberFormat('fa-IR').format(n)+' تومان';const img=key=>`https://images.unsplash.com/${key}?auto=format&fit=crop&w=600&q=80`;
+const state={cart:JSON.parse(localStorage.getItem('vesta-cart')||'{}'),wish:JSON.parse(localStorage.getItem('vesta-wish')||'[]'),theme:localStorage.getItem('vesta-theme')==='dark'?'dark':'light',query:'',cat:'',sort:'default',min:0,max:1000000000,filterOpen:false};document.documentElement.dataset.theme=state.theme;Object.keys(state.cart).forEach(id=>{if(!products.some(product=>product.id===+id&&product.price!=null))delete state.cart[id]});const app=document.querySelector('#app');function save(){localStorage.setItem('vesta-cart',JSON.stringify(state.cart));localStorage.setItem('vesta-wish',JSON.stringify(state.wish))}function go(path){history.pushState({},'',path);render();window.scrollTo(0,0)}
+function productCard(p){const discount=p.old?Math.round((1-p.price/p.old)*100):0;return `<article class="product-card"><div class="product-image" role="link" tabindex="0" data-product="${p.id}"><img loading="lazy" fetchpriority="low" decoding="async" src="${p.art||img(p.image)}" alt="${p.name}"><span class="tag ${p.old?'tag-sale':''}">${p.old?`${discount}٪ تخفیف`:p.kind==='اکانت بازی'?'اکـانـت بازی':p.kind||'بازی'}</span><button class="wish ${state.wish.includes(p.id)?'is-wish':''}" data-wish="${p.id}" aria-label="افزودن به علاقه‌مندی‌ها">${headerIcon('heart')}</button></div><div class="product-info"><div class="product-cat">${p.cat}</div><h3 role="link" tabindex="0" data-product="${p.id}">${p.name}</h3><div class="price-line">${p.old?`<del>${money(p.old)}</del>`:''}<strong>${p.price?money(p.price):'قیمت به‌زودی'}</strong></div><button class="add-btn details-btn product-glow-btn" data-product="${p.id}">جزئیات محصول</button></div></article>`}
 
-// ---------------------------------------------------------------
-//  State
-// ---------------------------------------------------------------
-const state = {
-  session: null,
-  profile: null,          // ردیف پروفایل کاربر جاری
-  conversations: [],       // لیست گفتگوهای کاربر
-  activeConversationId: null,
-  messages: [],             // پیام‌های گفتگوی باز
-  messageChannel: null,     // سابسکرایپشن Realtime فعال
-};
+function detail(id){
+ const p=products.find(x=>x.id===+id)||products[0];
+ const purchaseActions=p.price?`<button class="primary-btn product-glow-btn" data-add="${p.id}">افزودن به سبد خرید　＋</button><button class="outline-btn product-glow-btn" data-buy="${p.id}">خرید سریع</button>`:p.id===22?`<button type="button" class="gta-preorder-rgb product-glow-btn preorder-disabled" disabled title="امکان ثبت پیش‌خرید پس از تأیید قیمت و موجودی فعال می‌شود">پیش‌خرید · به‌زودی</button>`:`<span class="outline-btn">قیمت و موجودی پس از بررسی اعلام می‌شود.</span>`;
 
-// ---------------------------------------------------------------
-//  DOM references
-// ---------------------------------------------------------------
-const $ = (sel) => document.querySelector(sel);
-const $$ = (sel) => document.querySelectorAll(sel);
-
-const authScreen = $("#auth-screen");
-const appScreen = $("#app-screen");
-
-const loginForm = $("#login-form");
-const registerForm = $("#register-form");
-const loginError = $("#login-error");
-const registerError = $("#register-error");
-
-const conversationListEl = $("#conversation-list");
-const searchInput = $("#search-input");
-const meAvatar = $("#me-avatar");
-const meName = $("#me-name");
-const logoutBtn = $("#logout-btn");
-
-const emptyMessagesEl = $("#empty-messages");
-const activeChatEl = $("#active-chat");
-const messagesListEl = $("#messages-list");
-const peerAvatarEl = $("#peer-avatar");
-const peerNameEl = $("#peer-name");
-const peerStatusEl = $("#peer-status");
-
-const composerForm = $("#composer-form");
-const composerInput = $("#composer-input");
-const sendBtn = $("#send-btn");
-
-const sidebarEl = $("#sidebar");
-const chatPaneEl = $("#chat-pane");
-const mobileBackBtn = $("#mobile-back-btn");
-
-const toastEl = $("#toast");
-
-// ---------------------------------------------------------------
-//  Utilities
-// ---------------------------------------------------------------
-function showToast(message, isError = false) {
-  toastEl.textContent = message;
-  toastEl.classList.toggle("is-error", isError);
-  toastEl.classList.add("is-visible");
-  clearTimeout(showToast._t);
-  showToast._t = setTimeout(() => toastEl.classList.remove("is-visible"), 3200);
+ const wishButton=`<button class="round-btn" data-wish="${p.id}" aria-label="افزودن به علاقه‌مندی‌ها">${headerIcon('heart')}</button>`;
+ return `<div class="wrap detail-page"><div class="breadcrumbs"><a href="/" data-nav="/">خانه</a>　/　${p.cat}　/　${p.name}</div><div class="detail-grid"><div class="gallery"><div class="main-photo"><img src="${p.art||img(p.image)}" alt="${p.name}" fetchpriority="high" decoding="async"></div><div class="thumb-row"><img src="${p.art||img(p.image)}" alt="نمای محصول"></div></div><div class="detail-info"><span class="eyebrow">${p.cat}　·　کد محصول VS-${p.id}24</span><h1>${p.name}</h1><div class="detail-price">${p.old?`<del>${money(p.old)}</del>`:''}<strong>${p.price?money(p.price):'قیمت به‌زودی'}</strong></div><div class="detail-actions">${purchaseActions}${wishButton}</div></div></div><div class="detail-tabs"><button class="tab active">معرفی محصول</button><button class="tab" id="spec-tab">مشخصات فنی</button><button class="tab" data-scroll="reviews">دیدگاه‌ها</button></div><section class="detail-description full-desc" id="specs"><h2>معرفی و مشخصات کالا</h2>${p.short_description?`<p class="detail-summary">${p.short_description}</p>`:''}${p.description&&p.description!==p.short_description?`<p>${p.description}</p>`:''}<div class="spec-table"><span>برند</span><b>${p.brand}</b><span>مدل</span><b>${p.model}</b><span>دسته‌بندی</span><b>${p.category}</b><span>وضعیت موجودی</span><b>${p.stock==null?'نیازمند تأیید فروشگاه':p.stock>0?'موجود':'ناموجود'}</b><span>قیمت</span><b>${p.price==null?'قیمت به‌زودی':money(p.price)}</b><span>قیمت بررسی‌شده در</span><b>${p.checked_at}</b>${Object.entries(p.specifications||{}).map(([key,value])=>`<span>${key}</span><b>${value}</b>`).join('')}<span>منبع قیمت / مشخصات</span><b><a href="${p.source_url}" target="_blank" rel="noopener noreferrer">${p.source}</a></b></div></section><section class="reviews" id="reviews"><h2>دیدگاه‌ها</h2><p>هنوز دیدگاهی برای این کالا ثبت نشده است.</p></section><section class="section"><div class="section-head"><h2>محصولات مشابه</h2></div><div class="product-grid">${products.filter(x=>x.id!==p.id).slice(0,4).map(productCard).join('')}</div></section></div>`
 }
+function cartPage(){let es=Object.entries(state.cart).map(([id,q])=>[products.find(p=>p.id==id),q]).filter(x=>x[0]&&x[0].price!=null),sum=es.reduce((a,[p,q])=>a+p.price*q,0),disc=es.reduce((a,[p,q])=>a+(p.old?p.old-p.price:0)*q,0),ship=0;return `<div class="wrap standard-page"><div class="breadcrumbs">خانه　/　سبد خرید</div><h1>سبد خرید <small>(${es.length} کالا)</small></h1>${es.length?`<div class="cart-layout"><div class="cart-items">${es.map(([p,q])=>`<article class="cart-item"><img src="${p.art||img(p.image)}" alt="${p.name}" loading="lazy" decoding="async"><div class="cart-item-info"><a href="/product/${p.id}" data-nav="/product/${p.id}"><b>${p.name}</b></a><small>کالای انتخاب‌شده</small><strong>${money(p.price)}</strong><div class="quantity"><button data-qty="${p.id}" data-delta="-1">−</button><span>${q}</span><button data-qty="${p.id}" data-delta="1">+</button><button class="remove" data-remove="${p.id}">حذف</button></div></div></article>`).join('')}</div><aside class="summary"><h3>خلاصه سفارش</h3><div><span>قیمت کالاها</span><b>${money(sum)}</b></div><div><span>تخفیف</span><b class="green">− ${money(disc)}</b></div><div><span>هزینه ارسال</span><b>پس از ثبت نشانی</b></div><hr><div class="total"><span>مبلغ قابل پرداخت</span><b>${money(sum+ship)}</b></div><button class="primary-btn wide" data-nav="/checkout">ادامه و ثبت سفارش</button><p>هزینه ارسال بعد از ثبت نشانی مشخص می‌شود.</p></aside></div>`:`<div class="empty-state"><span>${headerIcon('cart')}</span><h3>سبد خریدت هنوز خالیه</h3><p>هنوز کالایی به سبد اضافه نکرده‌ای.</p><a href="/products" data-nav="/products" class="primary-btn">دیدن محصولات</a></div>`}</div>`}
+function checkout(){return `<div class="wrap standard-page"><div class="breadcrumbs">خانه　/　سبد خرید　/　ثبت سفارش</div><h1>تکمیل سفارش</h1><div class="steps"><span class="active">۱　اطلاعات و آدرس</span><span>۲　روش ارسال</span><span>۳　پرداخت</span></div><form id="checkout-form" class="checkout-layout"><div class="checkout-card"><h2>اطلاعات تحویل سفارش</h2><div class="form-grid"><label>نام و نام خانوادگی<input required placeholder="نام گیرنده"></label><label>شماره موبایل<input required type="tel" placeholder="۰۹۱۲۱۲۳۴۵۶۷"></label><label class="full">نشانی کامل<input required placeholder="استان، شهر، خیابان، پلاک و واحد"></label><label>کد پستی<input required placeholder="۱۰ رقمی"></label><label>روش ارسال<select><option>ارسال وِستا — رایگان</option><option>ارسال سریع</option></select></label></div><h2 class="payment-title">روش پرداخت</h2><label class="payment-option"><input type="radio" name="payment" checked> پرداخت اینترنتی <small>پرداخت امن از طریق درگاه بانکی</small></label><label class="payment-option"><input type="radio" name="payment"> پرداخت در محل <small>پرداخت هنگام تحویل سفارش</small></label></div><aside class="summary"><h3>خلاصه سفارش</h3><div><span>تعداد کالا</span><b>${Object.values(state.cart).reduce((a,b)=>a+b,0)}</b></div><div><span>هزینه ارسال</span><b>پس از ثبت نشانی</b></div><hr><div class="total"><span>مبلغ قابل پرداخت</span><b>${money(Object.entries(state.cart).reduce((a,[id,q])=>a+products.find(p=>p.id==id).price*q,0))}</b></div><button class="primary-btn wide">تأیید و پرداخت</button><p>درگاه پرداخت در این نسخه فعال نیست.</p></aside></form></div>`}
+function account(path){if(path.includes('wishlist'))return `<div class="wrap standard-page"><div class="breadcrumbs">خانه　/　حساب کاربری　/　علاقه‌مندی‌ها</div><h1>علاقه‌مندی‌های من</h1><div class="product-grid">${products.filter(p=>state.wish.includes(p.id)).map(productCard).join('')||'<div class="empty-state"><span><svg class="header-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.8 8.8c0 4.1-8.8 10-8.8 10s-8.8-5.9-8.8-10a4.8 4.8 0 0 1 8.8-2.7 4.8 4.8 0 0 1 8.8 2.7Z"/></svg></span><h3>هنوز چیزی ذخیره نکردی</h3><p>محصولات مورد علاقه‌ات را اینجا نگه دار.</p><a href="/products" data-nav="/products" class="primary-btn">کشف محصولات</a></div>'}</div></div>`;if(path.includes('orders'))return `<div class="wrap standard-page"><div class="breadcrumbs">خانه　/　حساب کاربری　/　سفارش‌ها</div><h1>سفارش‌های من</h1><div class="order-empty"><span>${headerIcon('orders')}</span><h3>هنوز سفارشی ثبت نکرده‌ای</h3><p>بعد از ثبت سفارش، وضعیت و جزئیات آن را همین‌جا دنبال کن.</p><a href="/products" data-nav="/products" class="primary-btn">شروع خرید</a></div></div>`;return `<div class="wrap standard-page"><div class="breadcrumbs">خانه　/　حساب کاربری</div><h1>سلام، خوش آمدی <span class="green">●</span></h1><div class="account-layout"><aside class="account-menu"><b>حساب من</b><a href="/account" data-nav="/account">${headerIcon('home')}<span>نمای کلی</span></a><a href="/account/orders" data-nav="/account/orders">${headerIcon('orders')}<span>سفارش‌های من</span></a><a href="/account/wishlist" data-nav="/account/wishlist">${headerIcon('heart')}<span>علاقه‌مندی‌ها</span></a><a href="/login" data-nav="/login">${headerIcon('logout')}<span>خروج از حساب</span></a></aside><div class="account-content"><div class="account-welcome"><span class="account-avatar">و</span><div><small>حساب کاربری وِستا</small><h2>اطلاعات حساب و سفارش‌ها</h2></div><a class="outline-btn" href="/account/orders" data-nav="/account/orders">سفارش‌ها ←</a></div><div class="account-stats"><div><small>سفارش‌های ثبت‌شده</small><b>۰</b></div><div><small>علاقه‌مندی‌ها</small><b>${state.wish.length}</b></div><div><small>امتیاز وفاداری</small><b>۰ <small>امتیاز</small></b></div></div><h3>پیشنهاد برای تو</h3><div class="product-grid">${products.slice(0,2).map(productCard).join('')}</div></div></div></div>`}
+function auth(register=false){return `<div class="wrap auth-page"><div class="auth-shell"><aside class="auth-promo"><div class="auth-promo-brand"><span class="logo-mark">v</span><b>وِستا</b><small>انتخاب هوشمند</small></div><div class="auth-promo-copy"><span class="eyebrow">${register?'ثبت‌نام در وِستا':'ورود به حساب وِستا'}</span><h2>${register?'خریدها و کالاهای ذخیره‌شده را در حساب ببین.':'وارد حساب وِستا شو.'}</h2><p>${register?'خریدها و کالاهای ذخیره‌شده را در حساب ببین.':'ایمیل و رمز عبور را وارد کن.'}</p></div><div class="auth-promo-art" aria-hidden="true"><div class="auth-orbit auth-orbit-one"></div><div class="auth-orbit auth-orbit-two"></div><img src="/assets/fc-27-cover.jpg" alt=""><div class="auth-mini-card"><span>حساب وِستا</span><b>خریدها و<br>علاقه‌مندی‌ها</b><i>VESTA MEMBER</i></div></div><div class="auth-promo-footer"><span>خرید آنلاین</span><span>انتخاب کالا</span><span>راهنمای خرید</span></div></aside><section class="auth-form-panel"><a class="auth-mobile-brand logo" href="/" data-nav="/"><span class="logo-mark">v</span><span>وِستا<small>انتخاب هوشمند</small></span></a><div class="auth-heading"><div class="auth-step-mark">${headerIcon('user')}</div><div class="eyebrow">${register?'ثبت‌نام در وِستا':'حساب کاربری وِستا'}</div><h1>${register?'ساخت حساب کاربری':'ورود به حساب'}</h1><p>${register?'نام و اطلاعات ورود را وارد کن.':'ایمیل و رمز عبور را وارد کن.'}</p></div><form id="auth-form" class="auth-box">${register?`<label class="auth-field"><span>نام و نام خانوادگی</span><input name="name" autocomplete="name" required placeholder="مثلاً نازنین احمدی"></label>`:''}<label class="auth-field"><span>ایمیل</span><input name="email" type="email" autocomplete="email" required placeholder="name@example.com"></label><label class="auth-field"><span>رمز عبور</span><input name="password" type="password" autocomplete="${register?'new-password':'current-password'}" minlength="6" required placeholder="حداقل ۶ کاراکتر"></label>${register?`<label class="auth-consent"><input type="checkbox" required><span>با <a href="#">قوانین وِستا</a> و سیاست حفظ حریم خصوصی موافقم.</span></label>`:''}<button class="primary-btn auth-submit">${register?'ساخت حساب و ادامه':'ادامه'}</button></form><div class="auth-separator"><span>یا</span></div><div class="auth-switch">${register?'حساب داری؟':'هنوز عضو وِستا نیستی؟'} <a href="/${register?'login':'register'}" data-nav="/${register?'login':'register'}">${register?'ورود به حساب':'ساخت حساب رایگان'}</a></div><div class="auth-safe">اطلاعات ورود را با کسی به‌اشتراک نگذار.</div></section></div></div>`}
 
-function initials(name = "") {
-  return name.trim().slice(0, 2).toUpperCase() || "?";
+function render(){let path=decodeURI(location.pathname),content;if(path==='/')content=home();else if(path==='/products')content=catalog('همه‌ی بازی‌ها');else if(path.startsWith('/category/'))content=catalog(path.split('/').pop(),path.split('/').pop());else if(path.startsWith('/product/'))content=detail(path.split('/').pop());else if(path==='/search'){state.query=new URLSearchParams(location.search).get('q')||state.query;content=catalog(state.query?`نتایج جستجو برای «${state.query}»`:'جستجوی محصولات')}else if(path==='/cart')content=cartPage();else if(path==='/checkout')content=checkout();else if(path==='/login')content=auth(false);else if(path==='/register')content=auth(true);else if(path.startsWith('/account'))content=account(path);else content=home();app.innerHTML=shell(content);bind();}
+function setTheme(theme,button){const dark=theme==='dark';document.body.classList.add('theme-animating');void document.body.offsetWidth;state.theme=dark?'dark':'light';localStorage.setItem('vesta-theme',state.theme);document.documentElement.dataset.theme=state.theme;document.querySelector('meta[name=theme-color]')?.setAttribute('content',dark?'#081a22':'#f7f8fa');button.classList.toggle('theme-is-dark',dark);button.classList.toggle('is-active',dark);button.setAttribute('aria-pressed',String(dark));button.setAttribute('aria-label',dark?'تغییر به تم روشن':'تغییر به تم تیره');button.title=dark?'تم روشن':'تم تیره';button.classList.remove('theme-pulse');void button.offsetWidth;button.classList.add('theme-pulse');clearTimeout(window.vestaThemeTimer);window.vestaThemeTimer=setTimeout(()=>{document.body.classList.remove('theme-animating');button.classList.remove('theme-pulse')},1000)}
+function initImageLoading(){document.querySelectorAll('img').forEach(image=>{if(image.dataset.imageState)return;image.dataset.imageState='pending';image.classList.add('image-pending');const finish=ok=>{image.dataset.imageState=ok?'ready':'error';image.classList.remove('image-pending');image.classList.toggle('image-ready',ok);image.classList.toggle('image-error',!ok)};if(image.complete){finish(image.naturalWidth>0);return}image.addEventListener('load',()=>finish(true),{once:true});image.addEventListener('error',()=>finish(false),{once:true})})}
+function bind(){initImageLoading();initGameSlider();initHubTiles();initMonitorRail();document.querySelector('[data-theme-toggle]')?.addEventListener('click',e=>setTheme(state.theme==='dark'?'light':'dark',e.currentTarget));document.querySelector('[data-toggle-password]')?.addEventListener('click',e=>{const input=document.querySelector('#register-password'),visible=input.type==='password';input.type=visible?'text':'password';e.currentTarget.textContent=visible?'پنهان':'نمایش'});document.querySelectorAll('[data-nav]').forEach(el=>el.addEventListener('click',e=>{e.preventDefault();if(el.dataset.nav==='/products?sort=sale')state.sort='sale';go(el.dataset.nav)}));document.querySelectorAll('[data-product]').forEach(el=>el.addEventListener('click',()=>go('/product/'+el.dataset.product)));document.querySelectorAll('[data-add]').forEach(el=>el.addEventListener('click',()=>{const id=el.dataset.add;state.cart[id]=(state.cart[id]||0)+1;save();toast('به سبد خرید اضافه شد');render()}));document.querySelectorAll('[data-buy]').forEach(el=>el.addEventListener('click',()=>{state.cart[el.dataset.buy]=(state.cart[el.dataset.buy]||0)+1;save();go('/checkout')}));document.querySelectorAll('[data-wish]').forEach(el=>el.addEventListener('click',e=>{e.stopPropagation();const id=+el.dataset.wish;state.wish=state.wish.includes(id)?state.wish.filter(x=>x!==id):[...state.wish,id];save();render();toast(state.wish.includes(id)?'به علاقه‌مندی‌ها اضافه شد':'از علاقه‌مندی‌ها حذف شد')}));document.querySelectorAll('[data-qty]').forEach(el=>el.addEventListener('click',()=>{const id=el.dataset.qty;state.cart[id]=(state.cart[id]||0)+Number(el.dataset.delta);if(state.cart[id]<=0)delete state.cart[id];save();render()}));document.querySelectorAll('[data-remove]').forEach(el=>el.addEventListener('click',()=>{delete state.cart[el.dataset.remove];save();render();toast('محصول از سبد حذف شد')}));document.querySelectorAll('[data-sort]').forEach(el=>el.addEventListener('click',()=>{state.sort=el.dataset.sort;render()}));document.querySelectorAll('[data-cat]').forEach(el=>el.addEventListener('change',()=>go(el.checked?'/category/'+encodeURIComponent(el.dataset.cat):'/products')));document.querySelector('#open-filter')?.addEventListener('click',()=>{state.filterOpen=true;document.querySelector('#filters').classList.add('filter-visible')});document.querySelector('#close-filter')?.addEventListener('click',()=>document.querySelector('#filters').classList.remove('filter-visible'));document.querySelector('#apply-filter')?.addEventListener('click',()=>{state.min=+(document.querySelector('#min-price').value||0);state.max=+(document.querySelector('#max-price').value||1000000000);render()});document.querySelector('#clear-filter')?.addEventListener('click',()=>{state.min=0;state.max=1000000000;state.sort='default';go('/products')});document.querySelector('#discount-only')?.addEventListener('change',e=>{state.sort=e.target.checked?'sale':'popular';render()});document.querySelector('#rated')?.addEventListener('change',e=>{if(e.target.checked){document.querySelectorAll('.product-card').forEach(card=>{const id=+card.querySelector('[data-product]').dataset.product;if(products.find(p=>p.id===id).rate<4)card.remove()})}});document.querySelector('#reset-search')?.addEventListener('click',()=>{state.query='';go('/products')});document.querySelectorAll('[data-scroll]').forEach(el=>el.addEventListener('click',()=>document.getElementById(el.dataset.scroll)?.scrollIntoView({behavior:'smooth'})));document.querySelector('#spec-tab')?.addEventListener('click',()=>document.getElementById('specs').scrollIntoView({behavior:'smooth'}));document.querySelector('#search-form')?.addEventListener('submit',e=>{e.preventDefault();state.query=document.querySelector('#search-box').value.trim();go('/search?q='+encodeURIComponent(state.query))});const search=document.querySelector('#search-box'),suggestions=document.querySelector('#suggestions');search?.addEventListener('input',()=>{let q=search.value.trim();suggestions.innerHTML=q?`<div class="suggest-label">پیشنهاد برای جستجو</div>${products.filter(p=>`${p.name} ${p.brand} ${p.model} ${p.cat} ${p.category}`.toLocaleLowerCase().includes(q.toLocaleLowerCase())).slice(0,4).map(p=>`<a href="/product/${p.id}" data-suggestion="${p.id}"><img src="${p.image_url||p.images?.[0]||p.art}" alt=""><span>${p.name}</span><small>${p.price==null?'قیمت به‌زودی':money(p.price)}</small></a>`).join('')||`<a data-search="${q}">جستجوی «${q}» در محصولات ←</a>`}`:'';suggestions.classList.toggle('open',!!q);suggestions.querySelectorAll('[data-suggestion]').forEach(a=>a.addEventListener('click',e=>{e.preventDefault();go('/product/'+a.dataset.suggestion)}));suggestions.querySelector('[data-search]')?.addEventListener('click',()=>{state.query=q;go('/search?q='+encodeURIComponent(q))})});document.addEventListener('click',e=>{if(!e.target.closest('.search'))suggestions?.classList.remove('open')},{once:true});document.querySelector('#newsletter')?.addEventListener('submit',e=>{e.preventDefault();toast('این بخش هنوز فعال نیست');e.target.reset()});document.querySelector('#checkout-form')?.addEventListener('submit',e=>{e.preventDefault();state.cart={};save();app.innerHTML=shell(`<div class="wrap standard-page"><div class="success-state"><span>✓</span><h1>فرم سفارش تکمیل شد</h1><p>پرداخت آنلاین در دسترس نیست.</p><a href="/account/orders" data-nav="/account/orders" class="primary-btn">پیگیری سفارش</a></div></div>`);bind()});document.querySelector('#auth-form')?.addEventListener('submit',async e=>{e.preventDefault();const form=e.currentTarget,button=form.querySelector('.auth-submit'),email=form.elements.email.value.trim(),password=form.elements.password.value,register=location.pathname==='/register';button.disabled=true;button.textContent=register?'در حال ساخت حساب…':'در حال ورود…';try{const client=await getSupabaseClient();if(register){const {data,error}=await client.auth.signUp({email,password,options:{data:{full_name:form.elements.name.value.trim()},emailRedirectTo:`${location.origin}/account`}});if(error)throw error;if(data.session){toast('حساب ساخته شد.');go('/account')}else{toast('برای فعال‌کردن حساب، ایمیلت را بررسی کن.')}}else{const {error}=await client.auth.signInWithPassword({email,password});if(error)throw error;toast('وارد حساب شدی.');go('/account')}}catch(err){const message=err?.message||'';toast(message.includes('Invalid login credentials')?'ایمیل یا رمز عبور درست نیست.':message.includes('already registered')?'این ایمیل قبلاً ثبت شده.':message.includes('Password should be')?'رمز عبور باید دست‌کم ۶ کاراکتر باشد.':message.includes('Failed to fetch')?'اتصال به Supabase برقرار نشد. تنظیمات پروژه را بررسی کن.':'ورود انجام نشد؛ دوباره تلاش کن.')}finally{if(form.isConnected){button.disabled=false;button.textContent=register?'ساخت حساب و ادامه':'ورود به حساب' }}});document.querySelectorAll('.color-dot').forEach(el=>el.addEventListener('click',()=>{document.querySelectorAll('.color-dot').forEach(x=>x.classList.remove('active'));el.classList.add('active')}));}
+
+function initGameSlider(){const slides=[...document.querySelectorAll('.game-slide')];if(slides.length<2)return;let active=0,timer;const dots=[...document.querySelectorAll('.slide-dot')],counter=document.querySelector('#slide-current');const show=index=>{active=(index+slides.length)%slides.length;slides.forEach((el,i)=>el.classList.toggle('is-active',i===active));dots.forEach((el,i)=>{el.classList.toggle('active',i===active);el.setAttribute('aria-pressed',String(i===active))});if(counter)counter.textContent=active?'02':'01';};const start=()=>{clearInterval(timer);if(!matchMedia('(prefers-reduced-motion: reduce)').matches)timer=setInterval(()=>show(active+1),6800)};document.querySelectorAll('[data-go-slide]').forEach(el=>el.addEventListener('click',()=>{show(+el.dataset.goSlide);start()}));document.querySelectorAll('[data-direction]').forEach(el=>el.addEventListener('click',()=>{show(active+(el.dataset.direction==='next'?1:-1));start()}));const hero=document.querySelector('.game-hero');let touchX=0,touchY=0;let heroRect;hero?.addEventListener('pointerenter',e=>{if(e.pointerType==='touch')return;heroRect=hero.getBoundingClientRect();hero.classList.add('has-spotlight')});hero?.addEventListener('pointermove',e=>{if(e.pointerType==='touch')return;heroRect=heroRect||hero.getBoundingClientRect();hero.style.setProperty('--spot-x',`${e.clientX-heroRect.left}px`);hero.style.setProperty('--spot-y',`${e.clientY-heroRect.top}px`)});hero?.addEventListener('pointerleave',()=>{hero.classList.remove('has-spotlight');heroRect=null});hero?.addEventListener('pointerdown',e=>{if(e.pointerType!=='touch')return;touchX=e.clientX;touchY=e.clientY},{passive:true});hero?.addEventListener('pointerup',e=>{if(e.pointerType!=='touch')return;const dx=e.clientX-touchX,dy=e.clientY-touchY;if(Math.abs(dx)>46&&Math.abs(dx)>Math.abs(dy)*1.15){show(active+(dx<0?1:-1));start()}},{passive:true});hero?.addEventListener('mouseenter',()=>clearInterval(timer));hero?.addEventListener('mouseleave',start);show(0);start()}
+
+let vestaSupabase;async function getSupabaseClient(){if(vestaSupabase)return vestaSupabase;const [sdk,config]=await Promise.all([import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm'),import('./supabase-config.js')]);if(!config.SUPABASE_URL||!config.SUPABASE_ANON_KEY)throw new Error('Supabase is not configured');vestaSupabase=sdk.createClient(config.SUPABASE_URL,config.SUPABASE_ANON_KEY);return vestaSupabase}
+let monitorDragController;function initMonitorRail(){
+ monitorDragController?.abort();
+ const rails=[...document.querySelectorAll('#monitor-track, #mouse-track, #keyboard-track')];
+ if(!rails.length)return;
+ const controller=new AbortController(),{signal}=controller;monitorDragController=controller;
+ const rtlType=(()=>{
+  const outer=document.createElement('div'),inner=document.createElement('div');
+  outer.dir='rtl';outer.style.cssText='position:absolute;left:-9999px;width:4px;height:1px;overflow:scroll';
+  inner.style.cssText='width:8px;height:1px';outer.append(inner);document.body.append(outer);
+  let type;if(outer.scrollLeft>0)type='reverse';else{outer.scrollLeft=1;type=outer.scrollLeft===0?'negative':'default'}outer.remove();return type;
+ })();
+ const maxScroll=rail=>Math.max(0,rail.scrollWidth-rail.clientWidth);
+ const getLogical=rail=>{const max=maxScroll(rail),raw=rail.scrollLeft;return rtlType==='negative'?-raw:rtlType==='reverse'?max-raw:raw};
+ const setLogical=(rail,value)=>{const max=maxScroll(rail),bounded=Math.max(0,Math.min(max,value));rail.scrollLeft=rtlType==='negative'?-bounded:rtlType==='reverse'?max-bounded:bounded};
+ rails.forEach(rail=>{
+  let startX=0,startScroll=0,dragging=false,moved=false,suppressClick=false,repositioning=false,recycleTimer;
+  const rtl=getComputedStyle(rail).direction==='rtl';
+  const recyclePassedCards=()=>{
+   if(dragging||repositioning)return;
+   const gap=parseFloat(getComputedStyle(rail).columnGap)||0;
+   let stride=(rail.firstElementChild?.getBoundingClientRect().width||0)+gap;
+   if(!stride)return;
+   const logical=getLogical(rail),rotations=Math.min(Math.floor(logical/stride),rail.children.length);
+   if(!rotations)return;
+   repositioning=true;
+   const behavior=rail.style.scrollBehavior,snap=rail.style.scrollSnapType,anchor=rail.style.overflowAnchor;
+   rail.style.scrollBehavior='auto';rail.style.scrollSnapType='none';rail.style.overflowAnchor='none';
+   for(let i=0;i<rotations;i++)rail.append(rail.firstElementChild);
+   setLogical(rail,logical-rotations*stride);
+   requestAnimationFrame(()=>{rail.style.scrollBehavior=behavior;rail.style.scrollSnapType=snap;rail.style.overflowAnchor=anchor;repositioning=false});
+  };
+  const finish=()=>{if(!dragging)return;dragging=false;rail.classList.remove('is-dragging');requestAnimationFrame(recyclePassedCards);if(moved){suppressClick=true;setTimeout(()=>{suppressClick=false},0)}};
+  const scheduleRecycle=()=>{clearTimeout(recycleTimer);recycleTimer=setTimeout(recyclePassedCards,100)};
+  signal.addEventListener('abort',()=>clearTimeout(recycleTimer),{once:true});
+  rail.addEventListener('scroll',scheduleRecycle,{passive:true,signal});
+  rail.addEventListener('pointerdown',e=>{if(e.pointerType!=='mouse'||e.button!==0)return;startX=e.clientX;startScroll=rail.scrollLeft;dragging=true;moved=false},{signal});
+  document.addEventListener('pointermove',e=>{if(!dragging)return;const delta=e.clientX-startX;if(Math.abs(delta)>5){moved=true;rail.classList.add('is-dragging');e.preventDefault()}if(moved)rail.scrollLeft=startScroll+delta*(rtl?1:-1)},{signal});
+  document.addEventListener('pointerup',finish,{signal});document.addEventListener('pointercancel',finish,{signal});
+  document.addEventListener('click',e=>{if(!suppressClick||!e.target.closest?.(`#${rail.id}`))return;e.preventDefault();e.stopPropagation();e.stopImmediatePropagation()},{capture:true,signal});
+ });
 }
-
-function formatTime(iso) {
-  if (!iso) return "";
-  const d = new Date(iso);
-  return d.toLocaleTimeString("fa-IR", { hour: "2-digit", minute: "2-digit" });
-}
-
-function escapeHtml(str = "") {
-  const div = document.createElement("div");
-  div.textContent = str;
-  return div.innerHTML;
-}
-
-// ---------------------------------------------------------------
-//  Auth: tabs
-// ---------------------------------------------------------------
-$$(".tab-btn").forEach((btn) => {
-  btn.addEventListener("click", () => {
-    $$(".tab-btn").forEach((b) => b.classList.remove("is-active"));
-    btn.classList.add("is-active");
-    const target = btn.dataset.tab;
-    loginForm.style.display = target === "login" ? "block" : "none";
-    registerForm.style.display = target === "register" ? "block" : "none";
-  });
-});
-
-// ---------------------------------------------------------------
-//  Auth: register
-// ---------------------------------------------------------------
-registerForm.addEventListener("submit", async (e) => {
-  e.preventDefault();
-  registerError.textContent = "";
-  const submitBtn = $("#register-submit");
-  submitBtn.disabled = true;
-  submitBtn.textContent = "در حال ساخت حساب…";
-
-  const username = $("#register-username").value.trim();
-  const email = $("#register-email").value.trim();
-  const password = $("#register-password").value;
-
-  try {
-    const { data, error } = await supabase.auth.signUp({ email, password });
-    if (error) throw error;
-
-    // اگر کاربر بلافاصله session داره (تایید ایمیل خاموشه) پروفایل رو می‌سازیم
-    if (data.user) {
-      const { error: profileError } = await supabase.from("profiles").insert({
-        id: data.user.id,
-        username,
-      });
-      if (profileError && profileError.code !== "23505") throw profileError;
-    }
-
-    showToast("حساب ساخته شد! اگر تایید ایمیل فعاله، ایمیلت رو چک کن.");
-    if (data.session) {
-      await handleAuthenticated(data.session);
-    } else {
-      $$(".tab-btn")[0].click();
-    }
-  } catch (err) {
-    registerError.textContent = translateAuthError(err.message);
-  } finally {
-    submitBtn.disabled = false;
-    submitBtn.textContent = "ساخت حساب";
-  }
-});
-
-// ---------------------------------------------------------------
-//  Auth: login
-// ---------------------------------------------------------------
-loginForm.addEventListener("submit", async (e) => {
-  e.preventDefault();
-  loginError.textContent = "";
-  const submitBtn = $("#login-submit");
-  submitBtn.disabled = true;
-  submitBtn.textContent = "در حال ورود…";
-
-  const email = $("#login-email").value.trim();
-  const password = $("#login-password").value;
-
-  try {
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) throw error;
-    await handleAuthenticated(data.session);
-  } catch (err) {
-    loginError.textContent = translateAuthError(err.message);
-  } finally {
-    submitBtn.disabled = false;
-    submitBtn.textContent = "ورود به حساب";
-  }
-});
-
-function translateAuthError(msg = "") {
-  if (msg.includes("Invalid login credentials")) return "ایمیل یا رمز عبور اشتباهه.";
-  if (msg.includes("already registered")) return "این ایمیل قبلاً ثبت شده.";
-  if (msg.includes("Password should be")) return "رمز عبور باید حداقل ۶ کاراکتر باشه.";
-  return msg || "خطایی پیش اومد. دوباره تلاش کن.";
-}
-
-// ---------------------------------------------------------------
-//  Auth: logout
-// ---------------------------------------------------------------
-logoutBtn.addEventListener("click", async () => {
-  await supabase.auth.signOut();
-  cleanupRealtime();
-  state.session = null;
-  state.profile = null;
-  authScreen.classList.add("is-active");
-  appScreen.classList.remove("is-active");
-});
-
-// ---------------------------------------------------------------
-//  After successful login/register: load app
-// ---------------------------------------------------------------
-async function handleAuthenticated(session) {
-  state.session = session;
-
-  const { data: profile, error } = await supabase
-    .from("profiles")
-    .select("*")
-    .eq("id", session.user.id)
-    .single();
-
-  if (error) {
-    showToast("پروفایل پیدا نشد — schema.sql رو روی Supabase اجرا کردی؟", true);
-    return;
-  }
-
-  state.profile = profile;
-  meAvatar.textContent = initials(profile.username);
-  meName.textContent = profile.username;
-
-  authScreen.classList.remove("is-active");
-  appScreen.classList.add("is-active");
-
-  loadConversations();
-}
-
-// ---------------------------------------------------------------
-//  Conversations
-// ---------------------------------------------------------------
-async function loadConversations() {
-  const { data, error } = await supabase
-    .from("conversation_members")
-    .select(`
-      conversation:conversations (
-        id, is_group, name, created_at,
-        members:conversation_members ( user:profiles ( id, username, avatar_url, status ) )
-      )
-    `)
-    .eq("user_id", state.profile.id);
-
-  if (error) {
-    conversationListEl.innerHTML = `<p style="padding:16px;color:var(--text-muted);font-size:12.5px;">خطا در بارگذاری گفتگوها: ${escapeHtml(error.message)}</p>`;
-    return;
-  }
-
-  state.conversations = (data || []).map((row) => row.conversation).filter(Boolean);
-  renderConversationList(state.conversations);
-}
-
-function renderConversationList(list) {
-  if (!list.length) {
-    conversationListEl.innerHTML = `
-      <div style="padding:28px 16px;text-align:center;color:var(--text-muted);font-size:12.5px;">
-        هنوز گفتگویی نداری.<br/>وقتی از Supabase یه مکالمه بسازی، اینجا نمایش داده می‌شه.
-      </div>`;
-    return;
-  }
-
-  conversationListEl.innerHTML = list
-    .map((conv) => {
-      const peer = getPeerForConversation(conv);
-      const title = conv.is_group ? conv.name || "گروه بدون‌نام" : peer?.username || "کاربر";
-      return `
-        <div class="conv-item" data-id="${conv.id}">
-          <div class="avatar">
-            ${initials(title)}
-            <span class="status-dot"></span>
-          </div>
-          <div class="conv-item__body">
-            <div class="conv-item__top">
-              <span class="conv-item__name">${escapeHtml(title)}</span>
-              <span class="conv-item__time"></span>
-            </div>
-            <div class="conv-item__preview">برای شروع، پیام بفرست</div>
-          </div>
-        </div>`;
-    })
-    .join("");
-
-  conversationListEl.querySelectorAll(".conv-item").forEach((el) => {
-    el.addEventListener("click", () => openConversation(el.dataset.id));
-  });
-}
-
-function getPeerForConversation(conv) {
-  const members = (conv.members || []).map((m) => m.user).filter(Boolean);
-  return members.find((m) => m.id !== state.profile.id) || members[0];
-}
-
-searchInput.addEventListener("input", () => {
-  const q = searchInput.value.trim().toLowerCase();
-  if (!q) return renderConversationList(state.conversations);
-  const filtered = state.conversations.filter((conv) => {
-    const peer = getPeerForConversation(conv);
-    const title = conv.is_group ? conv.name || "" : peer?.username || "";
-    return title.toLowerCase().includes(q);
-  });
-  renderConversationList(filtered);
-});
-
-// ---------------------------------------------------------------
-//  Open a conversation
-// ---------------------------------------------------------------
-async function openConversation(conversationId) {
-  state.activeConversationId = conversationId;
-
-  $$(".conv-item").forEach((el) => el.classList.toggle("is-active", el.dataset.id === conversationId));
-
-  const conv = state.conversations.find((c) => c.id === conversationId);
-  const peer = getPeerForConversation(conv);
-  const title = conv.is_group ? conv.name || "گروه" : peer?.username || "کاربر";
-
-  peerAvatarEl.textContent = initials(title);
-  peerNameEl.textContent = title;
-  peerStatusEl.textContent = peer?.status || "آنلاین";
-
-  emptyMessagesEl.style.display = "none";
-  activeChatEl.style.display = "flex";
-
-  // نمایش موبایل: رفتن به chat-pane
-  sidebarEl.classList.add("is-hidden");
-  chatPaneEl.classList.add("is-active");
-
-  await loadMessages(conversationId);
-  subscribeToMessages(conversationId);
-}
-
-mobileBackBtn.addEventListener("click", () => {
-  sidebarEl.classList.remove("is-hidden");
-  chatPaneEl.classList.remove("is-active");
-});
-
-// ---------------------------------------------------------------
-//  Messages: load + render
-// ---------------------------------------------------------------
-async function loadMessages(conversationId) {
-  messagesListEl.innerHTML = `<div class="empty-state" style="margin:auto;"><p>در حال بارگذاری پیام‌ها…</p></div>`;
-
-  const { data, error } = await supabase
-    .from("messages")
-    .select("*")
-    .eq("conversation_id", conversationId)
-    .order("created_at", { ascending: true })
-    .limit(200);
-
-  if (error) {
-    messagesListEl.innerHTML = `<div class="empty-state" style="margin:auto;"><p>خطا در بارگذاری پیام‌ها: ${escapeHtml(error.message)}</p></div>`;
-    return;
-  }
-
-  state.messages = data || [];
-  renderMessages();
-}
-
-function renderMessages() {
-  if (!state.messages.length) {
-    messagesListEl.innerHTML = `
-      <div class="empty-state" style="margin:auto;">
-        <div class="empty-state__mark"></div>
-        <h3>هنوز پیامی نیست</h3>
-        <p>اولین پیام رو تو بفرست 👋</p>
-      </div>`;
-    return;
-  }
-
-  messagesListEl.innerHTML = state.messages
-    .map((msg) => {
-      const isOwn = msg.sender_id === state.profile.id;
-      return `
-        <div class="msg-row ${isOwn ? "is-own" : ""}">
-          <div>
-            <div class="msg-bubble">${escapeHtml(msg.content)}</div>
-            <div class="msg-meta"><span>${formatTime(msg.created_at)}</span></div>
-          </div>
-        </div>`;
-    })
-    .join("");
-
-  messagesListEl.scrollTop = messagesListEl.scrollHeight;
-}
-
-// ---------------------------------------------------------------
-//  Realtime subscription for the open conversation
-// ---------------------------------------------------------------
-function subscribeToMessages(conversationId) {
-  cleanupRealtime();
-
-  state.messageChannel = supabase
-    .channel(`messages:${conversationId}`)
-    .on(
-      "postgres_changes",
-      {
-        event: "INSERT",
-        schema: "public",
-        table: "messages",
-        filter: `conversation_id=eq.${conversationId}`,
-      },
-      (payload) => {
-        state.messages.push(payload.new);
-        renderMessages();
-      }
-    )
-    .subscribe();
-}
-
-function cleanupRealtime() {
-  if (state.messageChannel) {
-    supabase.removeChannel(state.messageChannel);
-    state.messageChannel = null;
-  }
-}
-
-// ---------------------------------------------------------------
-//  Composer: send message
-// ---------------------------------------------------------------
-composerInput.addEventListener("input", () => {
-  composerInput.style.height = "auto";
-  composerInput.style.height = Math.min(composerInput.scrollHeight, 120) + "px";
-});
-
-composerInput.addEventListener("keydown", (e) => {
-  if (e.key === "Enter" && !e.shiftKey) {
-    e.preventDefault();
-    composerForm.requestSubmit();
-  }
-});
-
-composerForm.addEventListener("submit", async (e) => {
-  e.preventDefault();
-  const content = composerInput.value.trim();
-  if (!content || !state.activeConversationId) return;
-
-  sendBtn.disabled = true;
-  composerInput.value = "";
-  composerInput.style.height = "auto";
-
-  const { error } = await supabase.from("messages").insert({
-    conversation_id: state.activeConversationId,
-    sender_id: state.profile.id,
-    content,
-  });
-
-  sendBtn.disabled = false;
-
-  if (error) {
-    showToast("ارسال پیام ناموفق بود: " + error.message, true);
-    composerInput.value = content; // برگردوندن متن برای تلاش دوباره
-  }
-});
-
-// ---------------------------------------------------------------
-//  Bootstrap: check for existing session on page load
-// ---------------------------------------------------------------
-(async function bootstrap() {
-  const { data } = await supabase.auth.getSession();
-  if (data.session) {
-    await handleAuthenticated(data.session);
-  }
-
-  supabase.auth.onAuthStateChange((event, session) => {
-    if (event === "SIGNED_OUT") {
-      authScreen.classList.add("is-active");
-      appScreen.classList.remove("is-active");
-    }
-  });
-})();
-                   
+function initHubTiles(){if(!matchMedia('(hover:hover) and (pointer:fine)').matches)return;document.querySelectorAll('.gaming-tile').forEach(tile=>{let rect;tile.addEventListener('pointerenter',()=>{rect=tile.getBoundingClientRect();tile.classList.add('is-hovered')});tile.addEventListener('pointermove',e=>{rect=rect||tile.getBoundingClientRect();const x=(e.clientX-rect.left)/rect.width,y=(e.clientY-rect.top)/rect.height;tile.style.setProperty('--pointer-x',`${(x*100).toFixed(1)}%`);tile.style.setProperty('--pointer-y',`${(y*100).toFixed(1)}%`);tile.style.setProperty('--tilt-x',`${((x-.5)*5).toFixed(2)}deg`);tile.style.setProperty('--tilt-y',`${((.5-y)*4).toFixed(2)}deg`)});tile.addEventListener('pointerleave',()=>{tile.classList.remove('is-hovered');tile.style.setProperty('--tilt-x','0deg');tile.style.setProperty('--tilt-y','0deg');rect=null})})}
+function toast(text){const el=document.querySelector('#toast');el.textContent=text;el.classList.add('show');setTimeout(()=>el.classList.remove('show'),2400)}window.addEventListener('popstate',render);render();
